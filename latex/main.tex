@@ -69,7 +69,40 @@ Similarly to the NEM, we consider a series of propagations of KO effects, expres
 This framework describes the propagation of changes caused by the KOs through the interaction networks to measured protein and metabolite abundances.\footnote{Where do lipids fit in?}
 Here, the matrix $S$ captures regulatory and signaling interactions and the matrix $M$ captures metabolic pathways.
 
-\paragraph{Observation} if we can assume that there is no pathway for KOs to affect metabolites other than via its effect on proteins, could we treat the problem of predicting changes in metabolites given changes in proteins as a distinct problem from that of predicting changes in proteins given KOs?
+\paragraph{Observation.} If we can assume that there is no pathway for KOs to affect metabolites other than via its effect on proteins, could we treat the problem of predicting changes in metabolites given changes in proteins as a distinct problem from that of predicting changes in proteins given KOs?
+
+\paragraph{Knockout-protein model.}
+The matrix $S$ models how proteins interact, more specifically, how the abundance of one protein affects the abundance of another.
+This means that entities like protein complexes are only relevant in interactions if they in turn affect the abundances of other proteins (e.g. by affecting regulation).
+If we suppose that there is a graph $G$ represents protein interactions, and suppose that in the experiment, there is sufficient time for the effects of knockouts to propagate throughout the graph, $S$ is the transitive closure of $G$.
+Moreover, if a change is observed in one protein, the effects of that change must have been observed as well in the model.
+If we had access to the true effect matrix $F$, we would have:
+\begin{itemize}
+ \item $F_{i \cdot} S = F_{i \cdot}$ for each knockout $i$. This is because if a change is observed in a protein, the propagation of that change to other proteins must have also been observed.
+ \item If $F_{i j} = F_{i' j} \neq 0$ then $\forall k : S_{j k} \neq 0 \Rightarrow F_{i k} = F_{i' k}$.
+ \item $S_{i \cdot} = F_{i \cdot}$.
+\end{itemize}
+Note that the statements above are not orthogonal.
+
+\paragraph{Protein-metabolite model.}
+To easily incorporate known metabolic pathways into the model we first start with the formulation of a pair of binary matrices, $R^\text{in}$ and $R^\text{out}$, where each row corresponds to a reaction and each column a metabolite.
+$R^\text{in} - R^\text{out}$ is somewhat similar to a flux matrix, but we don't model stoichiometry here.\footnote{Could we model stoichiometry?}
+We also need a matrix that tells us which protein catalyzes which reaction.
+Let that be a binary matrix $C$, where each row is a protein and each column is a reaction.
+Given these, $C R^\text{in}$ and $C R^\text{out}$ give us matrices where each row is a protein, and each column is a metabolite that potentially accumulates/depletes due to a change in the protein-catalyzed reactions associated.
+These changes may in turn propagate through the metabolic network.
+To model this propagation we can consider, for a given protein presence/absence vector $\vec p$, $(R^\text{in})^T ( \vec p C ) R^\text{out}$ as the propagation model.
+Therefore, given protein presence/absences vector $\vec p$ and protein abundance change vector $\vec{\Delta p}$, the expected change in the metabolite vector $\vec{ \Delta m}$ is bounded as:
+\[
+ -\vec{\Delta p} C R^\text{out} ( (R^\text{in})^T ( \vec p C ) R^\text{out} )^\infty \leq \vec{ \Delta m} \leq \vec{\Delta p} C R^\text{in} ( (R^\text{in})^T ( \vec p C ) R^\text{out} )^\infty
+\]
+One implicit assumption is that changes in abundance don't propagate backwards: the accumulation of a product of a reaction does not get potentially propagated to accumulations of the ingredients.
+
+A relaxed version of this model is one that does not take into account the change in available reactions in propagation, this simplifies to
+\[
+ -\vec{\Delta p} C R^\text{out} \underbrace{( (R^\text{in})^T R^\text{out} )^\infty}_M \leq \vec{ \Delta m} \leq \vec{\Delta p} C R^\text{in} \underbrace{( (R^\text{in})^T R^\text{out} )^\infty}_M
+\]
+where M is the transitive closure of the metabolic network (for metabolites).
 
 \section{Results}
 
