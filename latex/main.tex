@@ -104,6 +104,56 @@ A relaxed version of this model is one that does not take into account the chang
 \]
 where M is the transitive closure of the metabolic network (for metabolites).
 
+\subsection{Statement as a likelihood}
+
+\paragraph{The protein model.}
+The protein model consists of a single, transitively closed, trinary $(-1, 0, 1)$ matrix $G$, but for the optimization formulation, it helps to separate it into two matrices, making up the positive and negative components, $G_+$ and $G_-$ respectively.
+We then have the constraints:
+\begin{align}
+ \left. \begin{aligned}
+  G_{+ij} \in \{0,1\} \\
+  G_{-ij} \in \{0,1\}
+ \end{aligned} \right\} \forall i,j
+ &\qquad \text{Domain constraints} \\
+ G_{+ij} + G_{-ij} \leq 1 \quad \forall i,j &\qquad \text{Logical consistency constraint} \\
+ \left. \begin{aligned}
+  G_{+ij} \geq G_{+ik} G_{+kj} \\
+  G_{+ij} \geq G_{-ik} G_{-kj} \\
+  G_{-ij} \geq G_{-ik} G_{+kj} \\
+  G_{-ij} \geq G_{+ik} G_{-kj}
+ \end{aligned} \right\} \forall i,j,k
+ &\qquad \text{Transitivity constraints}
+\end{align}
+
+To derive the likelihood, we view this as a generative model where
+\begin{equation}
+ D_{ij} = f( G_{ij} )
+\end{equation}
+For Knockut $i$ and protein $j$, where $f$ is a function from the $\{ -1, 0, 1\}$ space to the space of $D$.
+The likelihood part of the optimization is then simply $\sum_{ij} \ell ( i j )$ for pointwise likelihood function $i j$.
+
+\paragraph{Optimizing transitivity.}
+The transitive constraints in the na\:ive formulation are quadratic, however, we can replace $G_+, G_-$ with a variable $T$ representing all three-node-paths, defining
+\begin{align}
+ T_{i+j+k} = G_{+ij} G_{+jk} \quad; i \rightarrow^+ j \rightarrow^+ k \\
+ T_{i+j-k} = G_{+ij} G_{-jk} \quad; i \rightarrow^+ j \rightarrow^- k \\
+ T_{i-j+k} = G_{-ij} G_{+jk} \quad; i \rightarrow^- j \rightarrow^+ k \\
+ T_{i-j-k} = G_{-ij} G_{-jk} \quad; i \rightarrow^- j \rightarrow^- k
+\end{align}
+where some of these paths are predefined/identical by definition:
+\begin{alignat}{3}
+ T_{i+i+i} = 1 \qquad & T_{i-i \cdot \cdot} = 0 \qquad & T_{ \cdot \cdot i - i } = 0 \\
+ T_{i+i \cdot j} = T_{i \cdot j+j} \qquad &
+\end{alignat}
+and, as a result, we can represent the transitivity constraints as linear.
+However, we need to introduce a constraint for $T$ to accurately maintain its meaning, namely, $T_{i+j+k} = T_{i+j+j} T_{j+j+k}$, which can be rewritten as
+\begin{gather}
+  T_{i x j \cdot k} \leq T_{i x j+j} \qquad T_{i \cdot j x k} \leq T_{j x k + k} \\
+  T_{i x j y k} \geq T_{i x j + j} + T_{j y k + k} - 1
+\end{gather}
+
+$T$ is therefore a tensor in $\mathbb R^{n \times 2 \times n \times 2 \times n}$ if we are given $n$ proteins.
+
 \section{Results}
 
 \section{Discussion}
