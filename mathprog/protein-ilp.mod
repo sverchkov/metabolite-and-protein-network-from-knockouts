@@ -64,6 +64,19 @@ s.t. transitivity_pm{p1 in P, p2 in P, p3 in P}: pathPM[p1,p2,p3] <= pathMP[p1,p
 s.t. transitivity_mp{p1 in P, p2 in P, p3 in P}: pathMP[p1,p2,p3] <= pathMP[p1,p3,p3];
 s.t. transitivity_mm{p1 in P, p2 in P, p3 in P}: pathMM[p1,p2,p3] <= pathPP[p1,p3,p3];
 
+solve;
+
 data;
 
+# Load from file
+
 set P := a b c d;
+
+param : P : P : loglikP : loglikM :=
+              a            a          1        -1
+              a            b          1        -1
+              a            c          0         0
+              a            d          0         0
+;
+
+end;

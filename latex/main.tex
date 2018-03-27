@@ -8,7 +8,7 @@
 \usepackage{tikz}
 \usetikzlibrary{matrix}
 
-\title{Learning an integrated network of metabolites and proteins from knockout screens}
+\title{Learning an integrated network of metabolites, lipids, and proteins from knockout screens}
 
 \author{Yuriy Sverchkov}
 
@@ -23,6 +23,8 @@ relevant regulatory, signaling, and metabolic pathways, we seek to elucidate the
 
 \section{Introduction}
 
+%TODO State clearly our goals
+
 \section{Background}
 
 Prior related work includes:
@@ -34,7 +36,10 @@ Our approach is in some ways similar to nested effects model \parencite{citation
 A general effects model can be characterized by an effect matrix $F$ where columns correspond to knockouts and and the rows correspond to measured phenotypes or ``effects,'' and matrix entries correspond to differential expression.
 The NEM factorizes $F = \Gamma \Theta$ where $\Gamma$ represents the propagation of a knockout to changes in gene activity among signaling genes (assumed to be the set of genes knocked out) and $\Theta$ represents the propagation of those changes to the measured effects.
 
-\section{Method}
+\section{General approach}
+
+The task at hand is that of refining and (in some aspects) de-novo constructing a network of interactions between genes, proteins, metabolites, and lipids.
+We approach the problem as one of synthesizing data and prior knowledge, more concretely:
 
 We may consider data available to us to come in one of a few possible forms:
 \begin{enumerate}
