@@ -95,6 +95,8 @@ Figure~\ref{fig:high-level} is a high-level diagram of this propagation.
 
 \paragraph{Observation.} If we can assume that there is no pathway for KOs to affect metabolites other than via its effect on proteins, could we treat the problem of predicting changes in metabolites given changes in proteins as a distinct problem from that of predicting changes in proteins given KOs?
 
+\section{Naive model statement}
+
 \paragraph{Knockout-protein model.}
 The matrix $S$ models how proteins interact, more specifically, how the abundance of one protein affects the abundance of another.
 This means that entities like protein complexes are only relevant in interactions if they in turn affect the abundances of other proteins (e.g. by affecting regulation).
@@ -177,6 +179,16 @@ However, we need to introduce a constraint for $T$ to accurately maintain its me
 \end{gather}
 
 $T$ is therefore a tensor in $\mathbb R^{n \times 2 \times n \times 2 \times n}$ if we are given $n$ proteins.
+
+\section{A simplified propagation model}
+
+\begin{itemize}
+ \item A transitively closed "detailed" graph captures the model of propagation of the perturbation by the knockout to measurable effects, the number of nodes in such a graph is at least on the order of the sum of knockouts and effects.
+ \item A transitively closed graph can be factored into a tri-partite graph of knockouts to latent components to effects.
+ \item The NEM model places a constraint on the number and nature of the latent components.
+ \item The NEM model constraints are such that there exist transitively closed detailed graphs that are not expressible by an NEM, leading one to either (1) relax the constraint on latent components or (2) relax the constraint on effect associations.
+ \item My aim is to come up with a model formulation that is (1) tri-partite (2) significantly more compact than the detailed transitively closed graph and (3) as expressive as the transitively closed graph when it comes to propagation of changes from KOs to effects.
+\end{itemize}
 
 \section{Results}
 
