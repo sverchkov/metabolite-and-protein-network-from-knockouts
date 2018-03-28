@@ -6,7 +6,7 @@
 \usepackage{amsmath,amsfonts}
 
 \usepackage{tikz}
-\usetikzlibrary{matrix}
+\usetikzlibrary{positioning,matrix}
 
 \title{Learning an integrated network of metabolites, lipids, and proteins from knockout screens}
 
@@ -41,38 +41,57 @@ The NEM factorizes $F = \Gamma \Theta$ where $\Gamma$ represents the propagation
 The task at hand is that of refining and (in some aspects) de-novo constructing a network of interactions between genes, proteins, metabolites, and lipids.
 We approach the problem as one of synthesizing data and prior knowledge, more concretely:
 
-We may consider data available to us to come in one of a few possible forms:
-\begin{enumerate}
- \item Quantitative measurements of particle abundances across conditions, including a wild-type (WT) condition.
- \item A binary call table of differential expression between each KO condition and the WT.
- \item A trinary ($-1, 0, +1$) call table of signed differential expression between each KO condition and the WT.
- \item A log-odds table that expresses the log-odds of differential expression.
-\end{enumerate}
+\begin{itemize}
+ \item \emph{The data} consists of log fold change for KO relative to wild type particle abundance measurements, derived from mass spectrometry (MS).
+ \begin{itemize}
+  \item Proteomics
+  \item Metabolomics
+  \item Lipidomics
+ \end{itemize}
+ \item \emph{The prior knowledge} comes in the form of networks of interactions available from a variety of sources.
+ \begin{itemize}
+  \item Gene and protein interaction networks
+  \item Metabolic networks: KEGG, BioCyc.
+  \item There are no networks for lipids.
+ \end{itemize}
+\end{itemize}
 
-Similarly to the NEM, we consider a series of propagations of KO effects, expressed as matrices (which correspond to regulatory, signaling, and metabolic networks).
+We attempt to integrate this data and prior knowledge into \emph{a model that explains how the changes introduced by a KO propagate to the measurements}.
+Figure~\ref{fig:high-level} is a high-level diagram of this propagation.
 
+\begin{figure}
+\centering
 \begin{tikzpicture}
-  \matrix (m) [matrix of nodes, row sep = 2em, column sep = 2em]
-  {
-    KO & \\
-    Proteins & \\
-    Proteins & Measurement \\
-    Reactions & \\
-    Metabolites & \\
-    Metabolites & Measurement \\
-  };
+  \node (ko) {KO};
+  \node (genes) [below=of ko] {Genes};
+  \node (proteins) [below=of genes] {Proteins};
+  \node (proteomics) [right=of proteins] {MS Proteomics};
+  \node (reactions) [below right=of proteins] {Metabolic Reactions};
+  \node (metabolites) [below=of reactions] {Metabolites};
+  \node (metabolomics) [below=of metabolites] {MS Metabolomics};
+  \node (lipids) [below left=of proteins] {Lipids};
+  \node (lipidomics) [below=of lipids] {MS Lipidomics};
+  
   \path[-stealth]
-    (m-1-1) edge (m-2-1)
-    (m-2-1) edge node [right] {$S^\infty$} (m-3-1)
-    (m-3-1) edge (m-3-2)
-      edge (m-4-1)
-    (m-4-1) edge node [right] {$M$} (m-5-1)
-    (m-5-1) edge node [right] {$M^\infty$} (m-6-1)
-    (m-6-1) edge (m-6-2);
-\end{tikzpicture}
+    (ko) edge (genes)
+    (genes) edge [bend left] (proteins)
+    (proteins) edge [bend left] (genes)
+    (proteins) edge [loop left] (proteins)
+    (proteins) edge (proteomics)
+    (proteins) edge (reactions)
+    (reactions) edge [bend left] (metabolites)
+    (metabolites) edge [bend left] (reactions)
+    (metabolites) edge (metabolomics)
+    (proteins) edge (lipids)
+    (lipids) edge (lipidomics)
+    (lipids) edge [stealth-stealth,dotted] node {?} (reactions);
 
-This framework describes the propagation of changes caused by the KOs through the interaction networks to measured protein and metabolite abundances.\footnote{Where do lipids fit in?}
-Here, the matrix $S$ captures regulatory and signaling interactions and the matrix $M$ captures metabolic pathways.
+\end{tikzpicture}
+\caption{A high-level diagram of how the changes introduced by a KO propagate to the measurements.}
+\label{fig:high-level}
+\end{figure}
+
+
 
 \paragraph{Observation.} If we can assume that there is no pathway for KOs to affect metabolites other than via its effect on proteins, could we treat the problem of predicting changes in metabolites given changes in proteins as a distinct problem from that of predicting changes in proteins given KOs?
 
