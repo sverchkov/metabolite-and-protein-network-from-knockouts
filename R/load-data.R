@@ -1,4 +1,5 @@
-library("dplyr")
+library("dplyr") # Data manipulation
+library("futile.logger") # Logging
 
 # Reader with specific settings
 my.read <- function( filename ) read.csv( file = filename, stringsAsFactors = F, check.names = F )
@@ -13,20 +14,3 @@ metabolomics <- read.csv( "raw-data/20180322_H3K_Batches1and2_Metabolomics.csv",
 metabolomics_unimputed <- read.csv( "raw-data/20180322_H3K_Batches1and2_Metabolomics_Unimputed.csv", stringsAsFactors = F, check.names = F )
 
 lipidomics <- my.read( "raw-data/20180322_H3K_Batches1and2_Lipidomics.csv" )
-
-## Data exploration and sanity checks
-
-## Which proteins are measured in which set?
-protein_names <- bind_rows(
-  proteomics1 %>% select( `Fasta headers` ) %>% mutate( Set = "1" ),
-  proteomics2 %>% select( `Fasta headers` ) %>% mutate( Set = "2" ),
-  proteomics3 %>% select( `Fasta headers` ) %>% mutate( Set = "3" ),
-  proteomics4 %>% select( `Fasta headers` ) %>% mutate( Set = "4" ),
-  proteomics_unimputed %>% select( `Fasta headers` ) %>% mutate( Set = "unimputed" ) ) %>%
-  group_by( `Fasta headers` ) %>%
-  summarise( Sets = paste( Set, collapse = "+" ) )
-
-protein_names %>% ungroup() %>% group_by( Sets ) %>% summarize( n() )
-
-#all_protein_names <- union( proteomics1$`Protein names`, proteomics2$`Protein names`, proteomics3$`Protein names`, proteomics4$`Protein names`, proteomics_unimputed$`Protein names` )
-
