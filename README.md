@@ -8,3 +8,5 @@ We use the following sources for our metabolic models:
  * [BiGG](http://bigg.ucsd.edu)
    * [Universal model download link](http://bigg.ucsd.edu/static/namespace/universal_model.json)
    * [The BiGG License](http://bigg.ucsd.edu/license#license)
+ * [KEGG](http://www.kegg.jp)
+   * Via the [KEGGREST](https://bioconductor.org/packages/release/bioc/html/KEGGREST.html) R pakcage
