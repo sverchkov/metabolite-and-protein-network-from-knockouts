@@ -25,5 +25,24 @@ proteomicsKOs <- knockout_reference_table %>% filter( Proteomics ) %>% select( K
 proteomics_subset <- proteomics_unimputed %>% select( c( identifying_columns, proteomicsKOs$Knockout ) )
 long_table <- proteomics_subset %>% gather( key = "Knockout", value = "log2fc", proteomicsKOs$Knockout )
 
-ggplot( long_table, aes( `Protein names`, log2fc ) ) + geom_point()
-        
+long_table <- left_join( long_table, knockout_reference_table )
+
+# Error-catching for t-test
+safe.t.test <- function( x ){
+  tryCatch( t.test(x)$p.value, error = function( anything ) NA )
+}
+
+# T-test to make calls
+call_table <- long_table %>% group_by( `Fasta headers`, `Gene Name` ) %>%
+  summarize( p.value = safe.t.test( log2fc ), `Mean log2fc` = mean( log2fc ), `Number of replicates` = n() )
+
+hit_counts <- call_table %>% group_by( `Fasta headers` ) %>% filter( p.value < 0.05 ) %>% summarize( n = n() )
+
+# Pick out a sample of proteins
+sample_of_proteins <- Reduce( c, Map(
+  function ( num ) sample( ( hit_counts %>% filter( n == num ) )$`Fasta headers`, size = 5 ),
+  1:5 ) )
+
+small_table <- call_table %>% filter( `Fasta headers` %in% sample_of_proteins )
+
+ggplot( small_table, aes( x = `Fasta headers`, y = `Gene Name`, color = `Mean log2fc` ) ) + geom_point() + scale_color_distiller( palette="Spectral" )
