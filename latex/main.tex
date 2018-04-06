@@ -50,13 +50,12 @@ We approach the problem as one of synthesizing data and prior knowledge, more co
  \end{itemize}
  \item \emph{The prior knowledge} comes in the form of networks of interactions available from a variety of sources.
  \begin{itemize}
-  \item Gene and protein interaction networks
-  \item Metabolic networks: KEGG, BioCyc.
+  \item Gene and protein interaction networks (to be added).
+  \item Metabolic networks: KEGG\footnote{We use the KEGGREST R package}, BiGG\footnote{\url{http://bigg.ucsd.edu}}, BioCyc.
   \item There are no networks for lipids.
  \end{itemize}
 \end{itemize}
 
-See Section~\ref{sec:data} for more about our data.
 We attempt to integrate this data and prior knowledge into \emph{a model that explains how the changes introduced by a KO propagate to the measurements}.
 Figure~\ref{fig:high-level} is a high-level diagram of this propagation.
 
@@ -95,6 +94,17 @@ Figure~\ref{fig:high-level} is a high-level diagram of this propagation.
 \paragraph{Observation.}
 If we can assume that there is no pathway for KOs to affect metabolites other than via its effect on proteins, we could treat the problem of predicting changes in metabolites given changes in proteins as a distinct problem from that of predicting changes in proteins KOs.
 The main issue with this approach is that our measurements of proteins in some cases identifies protein groups (since protein identification is based on peptides).
+
+\subsection{Data}
+
+The data we have is $\log_2$-fold change in KO vs WT data.
+As of April 2nd, 2018, we have data for the following KOs:
+ADCK1, ADCK2, ADCK5, AKAP1, ATF5, C6orf203, CISD2, COQ5, COQ7, COQ8A, COQ8A/COQ8B\footnote{Is COQ8A/COQ8B a double-KO?}, COQ8B, COQ9, DHRS4, FAM195A, GOLPH3, LYPLA1, MAVS, METTL5, MINOS1, MIPEP, OXLD1, PYURF, SLC25A30, SLC25A38, TMEM177, TSPO, USMG5.
+There are up to four replicates of each KO.
+
+\subsection{Small experiment dataset}
+
+For preliminary experiments we use a subset of 5 KOs (COQ5, COQ7, COQ8A, COQ8B, COQ9) and 25 protein measurements.
 
 \section{Naive model statement}
 
@@ -399,12 +409,6 @@ Such a DAG would be similarly interpreted to an NEM, representing causal relatio
 
 \paragraph{Learning latent sets in the ideal case.}
 In the ideal case, the latent sets correspond to unique columns of $F$, they can be read off from the data.
-
-\section{Data}
-
-The data we have is $\log_2$-fold change in KO vs WT data.
-As of April 2nd, 2018, we have the following data:
-
 
 %%%\section{Results}
 
