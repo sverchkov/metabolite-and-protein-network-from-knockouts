@@ -43,7 +43,7 @@ colnames( split_KO_names ) <- c( "KO", "CRISPR replicate", "Biological replicate
 proteoomics_knockouts <- proteomics_knockouts %>% cbind( split_KO_names )
 
 # Are the the KOs in the unimputed the same as the KOs in 1+2+3+4 ?
-if ( ! all( proteomics_knockouts$`Unimputed set` & !is.na( proteomics.knockouts$`Imputed set` ) ) ) {
+if ( ! all( proteomics_knockouts$`Unimputed set` & !is.na( proteomics_knockouts$`Imputed set` ) ) ) {
   flog.warn( "Proteomics: KO set of imputed data doesn't match KO set of imputed data." )
   View( proteomics_knockouts )
 }
