@@ -4,6 +4,7 @@
 \addbibresource{metabolic.bib}
 
 \usepackage{amsmath,amsfonts}
+\usepackage{algorithmic}
 
 \usepackage{tikz}
 \usetikzlibrary{positioning,matrix}
@@ -409,6 +410,22 @@ Such a DAG would be similarly interpreted to an NEM, representing causal relatio
 
 \paragraph{Learning latent sets in the ideal case.}
 In the ideal case, the latent sets correspond to unique columns of $F$, they can be read off from the data.
+In the case that we suspect that the data is not clean (i.e. some effects are DE when the data says they are not, or vice versa) we may consider ``eliminating'' latent sets by changing the attachments of associated effects.
+\begin{algorithmic}
+\REPEAT
+  \FORALL{Effect groups $g$}
+    \FORALL{Effects $e \in \mathcal E_g$}
+      \FORALL{Effect groups $g'$ differing by 1 action from $g$}
+        \STATE compute likelihood loss of assigning $e$ to $g'$
+        \STATE keep track of min likelihood loss
+      \ENDFOR
+      \STATE keep track of sum of min likelihood losses
+    \ENDFOR
+    \STATE sum of min likelihood losses is the cost of disbanding group $g$
+  \ENDFOR
+  \STATE disband the lowest-cost group if it is in the parsimony budget
+\UNTIL{Could not disband any more groups}  
+\end{algorithmic}
 
 %%%\section{Results}
 
