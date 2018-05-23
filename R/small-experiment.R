@@ -47,9 +47,9 @@ small_table <- call_table %>% filter( `Fasta headers` %in% sample_of_proteins )
 
 ggplot( small_table, aes( x = `Fasta headers`, y = `Gene Name`, color = `Mean log2fc` ) ) + geom_point() + scale_color_distiller( palette="Spectral" )
 
-#################################
-### Getting matching metabolomics
-#################################
+####################################
+### Getting matching metabolomics ##
+####################################
 metabolomics_subset <- metabolomics_unimputed %>% select( c( identifying_columns_m, proteomicsKOs$Knockout ) )
 metabolomics_long_table <- metabolomics_subset %>% gather( key = "Knockout", value = "log2fc", proteomicsKOs$Knockout )
 metabolomics_long_table <- left_join( metabolomics_long_table, knockout_reference_table )
