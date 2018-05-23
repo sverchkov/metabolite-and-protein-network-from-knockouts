@@ -427,6 +427,11 @@ In the case that we suspect that the data is not clean (i.e. some effects are DE
 \UNTIL{Could not disband any more groups}  
 \end{algorithmic}
 
+\paragraph{Placing metabolites and lipids downstream of proteins.}
+To place metabolites and lipids downstream of proteins, in the ideal case, for each knockout we would have a profile of protein changes and a profile of lipid and metabolite changes.
+As we did grouping sets of knockouts upstream of sets of proteins that changed in all KOs in the group, we can group sets of proteins upstream of sets of metabolites that changed together.
+For this, we consider for each metabolite change the sets of protein changes that co-occur with it, and take the intersection among those sets. That forms the group upstream of that metabolite.
+
 %%%\section{Results}
 
 %%%\section{Discussion}
