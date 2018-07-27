@@ -67,7 +67,7 @@ groupDownstreamByUpstream <- function(
       if ( any( conds ) ){
         neg.upstrm <- columnwiseAnd( call.matrix[conds,1:n.upstrm] < 0 )
         pos.upstrm <- columnwiseAnd( call.matrix[conds,1:n.upstrm] > 0 )
-        the.groups <- addToGroupStruct( the.groups, neg.upstrm, pos.upstrm, effect, change )
+        the.groups <- addToGroupStruct( the.groups, neg.upstrm, pos.upstrm, effect, change, conds )
       } else unexplained[ effect ] <- T
     }
   }
@@ -88,14 +88,11 @@ columnwiseAnd <- function( matrix ){
 #' @param pos binary vector of positive change calls
 #' @param effect integer indicating effect number
 #' @param change string indicating effect change direction (+=pos)
-addToGroupStruct <- function( the.groups, neg, pos, effect, change ){
+#' @param conds a binary vector of the conditions that cause the change
+addToGroupStruct <- function( the.groups, neg, pos, effect, change, conds ){
   
-  string <-
-    paste(
-      ifelse( neg&pos, "*",
-              ifelse( neg, "-",
-                      ifelse( pos, "+", "." ) ) ), collapse = "" )
-  
+  string <- paste( actions[conds], collapse = " " )
+
   num <-
     if ( change == "pos" ) effect else -effect
   
@@ -107,6 +104,6 @@ addToGroupStruct <- function( the.groups, neg, pos, effect, change ){
         effects = character() )
   
   the.groups[[string]]$effects <- union( the.groups[[string]]$effects, num )
-  
+
   return ( the.groups )
 }
