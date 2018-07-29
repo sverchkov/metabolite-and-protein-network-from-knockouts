@@ -13,6 +13,12 @@ ud.groups.1 <- groupDownstreamByUpstream(
   n.upstrm = length(effects),
   n.dnstrm = length(metabolite_effects) )
 
+match_matrix <- matchUpstreamToDownstream(
+  call.matrix = cbind( call_matrix, metabolite_call_matrix ),
+  n.cond = length(actions),
+  n.upstrm = length(effects),
+  n.dnstrm = length(metabolite_effects) )
+
 for ( group in ud.groups[[1]] ) {
   print( "up-proteins" )
   print( sum(group$pos.upstrm) )
@@ -37,7 +43,7 @@ for ( group in ud.groups[[1]] ) {
 }
 
 # Make a table summarizing the results
-# Table columns: Group, Molecule, Molecule type, Change direction
+# Table columns: KOs, Molecule, Molecule type, Change direction
 ud_group_table <- bind_rows( Map( function( group ){
   mets <- as.numeric( group$effects )
   up.m = mets[ mets > 0 ]
@@ -56,4 +62,9 @@ ud_group_table <- bind_rows( Map( function( group ){
             `Molecule type` = "Metabolite",
             `Change direction` = "down" )
   )
-}, ud.groups.1[[1]] ), .id = "Group" )
+}, ud.groups.1[[1]] ), .id = "KOs" )
+
+match_table <- getMatchDataTable( match_matrix, actions, c(effects, metabolite_effects),
+                                  types = c( rep( "Protein", length(effects) ),
+                                                  rep( "Metabolite", length( metabolite_effects ) ) )
+                                  )

@@ -75,6 +75,74 @@ groupDownstreamByUpstream <- function(
   return ( list( the.groups, unexplained ) )
 }
 
+#' Infer data table from match matrix
+#' 
+#' Infer a data table from the output of [matchUpstreamToDownstream], with columns
+#' groupID, KOs (concatenated string and group indicator). Molecule, Molecule type
+#' @import dplyr
+getMatchDataTable <- function( matches, kos, names, types ) {
+  n_molecules <- length( names )
+  bind_rows( Map( function (gid) {
+    bind_rows( Map( function( molid ) {
+      tibble( Molecule = names[molid], `Molecule Type` = types[molid] )
+    }, which( matches$matches[gid,] != 0 ) ) ) %>%
+      mutate( KOs = paste( kos[ matches$conditions[gid,] ], collapse = " " ),
+              groupID = gid )
+    
+  }, 1:nrow( matches$matches )) )
+}
+
+#' Generalized upstream-downstream pattern matching
+#' 
+#' Generalized upstream-downstream pattern matching
+#' 
+#' @param call.matrix
+#' @param n.cond
+#' @param n.upstrm
+#' @param n.dnstrm
+matchUpstreamToDownstream <- function(
+  call.matrix,
+  n.cond=nrow(call.matrix),
+  n.upstrm,
+  n.dnstrm )
+{
+  
+  if ( any( dim( call.matrix ) != c( n.cond, n.upstrm + n.dnstrm ) ) )
+    stop( "call matrix dimensions don't match given numbers of upstream and downstream things" )
+  
+  call.matrix <- as.matrix( call.matrix )
+  
+  skip <- logical( length = n.dnstrm )
+  
+  match_matrix <- NULL
+  condition_matrix <- NULL
+  
+  for ( effect in 1:n.dnstrm ) if ( !skip[effect] ) {
+    ind <- n.upstrm + effect
+    # Find matches
+    matching <- matchCols( call.matrix[, ind], call.matrix )
+    antiMatching <- matchCols( -call.matrix[, ind], call.matrix )
+    # Update skips
+    skip <- skip | (matching|antiMatching)[ n.upstrm + (1:n.dnstrm) ]
+    # Update match matrix
+    match_matrix <- rbind( match_matrix, as.integer( matching ) - as.integer( antiMatching ) )
+    # Update condition matrix
+    condition_matrix <- rbind( condition_matrix, call.matrix[, ind] != 0 )
+  }
+  
+  return ( list( matches = match_matrix, conditions = condition_matrix ) )
+}
+
+#' Find rows matching a vector
+#' 
+#' Finds the rows in matrix m that are exactly equal to vector v, returns a logical vector
+#' @param v
+#' @param m
+#' @return logical vector
+matchCols <- function( v, m ) {
+  apply( m, 2, function(x){ all( x == v ) } )
+}
+
 #' Columnwise and that handles input vectors sanely
 columnwiseAnd <- function( matrix ){
   if ( is.null( dim( matrix ) ) ) return( matrix )
