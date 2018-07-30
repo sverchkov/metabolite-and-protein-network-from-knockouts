@@ -44,7 +44,7 @@ shinyServer(function(input, output, session) {
     
     ggplot( filtered_table, aes( x = `Mean log2FC`, y = -log10(`p-Value`), color = Significance, shape = `Molecule Type` ) ) +
       xlab( expression(mean ~ log[2] ~ fold ~ change) ) +
-      ylab( expression(log[10] ~ p ~ "-value") ) +
+      ylab( expression(- log[10] ~ p ~ "-value") ) +
       geom_point()
     
   })
