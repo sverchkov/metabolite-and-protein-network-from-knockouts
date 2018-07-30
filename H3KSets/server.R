@@ -16,7 +16,8 @@ full_omics_table <- readRDS( "data/full-omics-table.rds" ) %>%
   mutate( Significance = ifelse( `p-Value` < 0.05,
                                  ifelse( abs( `Mean log2FC` ) > 1, "p<0.5 and |log_2 FC|>1", "p<0.5" ),
                                  "p>=0.05" ),
-          call = Significance == "p<0.5 and |log_2 FC|>1", "p<0.5" )
+          call = Significance == "p<0.5 and |log_2 FC|>1", "p<0.5",
+          `Negative Log p` = -log10(`p-Value`) )
 
 knockouts <- unique( full_omics_table$Knockout )
 
@@ -45,7 +46,9 @@ shinyServer(function(input, output, session) {
   })
   
   output$volcanoPlot <- renderPlot({
-    ggplot( filteredData(), aes( x = `Mean log2FC`, y = -log10(`p-Value`), color = Significance, shape = `Molecule Type` ) ) +
+    ggplot( filteredData(),
+            aes( x = `Mean log2FC`, y = `Negative Log p`,
+                 color = Significance, shape = `Molecule Type` ) ) +
       xlab( expression(mean ~ log[2] ~ fold ~ change) ) +
       ylab( expression(- log[10] ~ p ~ "-value") ) +
       geom_point()
