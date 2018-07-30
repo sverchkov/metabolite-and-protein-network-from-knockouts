@@ -27,29 +27,7 @@ shinyServer(function(input, output, session) {
   
   #output$info <- renderText( input$moleculeInput )
   
-  output$volcanoPlot <- renderPlot({
-    
-    filtered_table <- full_omics_table %>%
-      filter( Knockout %in% input$knockoutSelect, `Molecule Type` %in% input$moleculeInput )
-    
-    if( input$filterCommon ){
-      select_molecules <- filtered_table %>%
-        group_by( `Molecule ID` ) %>%
-        summarize( common = all( call ) ) %>%
-        ungroup() %>%
-        filter( common )
-      
-      filtered_table <- inner_join( filtered_table, select_molecules, by = "Molecule ID" )
-    }
-    
-    ggplot( filtered_table, aes( x = `Mean log2FC`, y = -log10(`p-Value`), color = Significance, shape = `Molecule Type` ) ) +
-      xlab( expression(mean ~ log[2] ~ fold ~ change) ) +
-      ylab( expression(- log[10] ~ p ~ "-value") ) +
-      geom_point()
-    
-  })
-
-  output$selectedData <- renderDataTable({
+  filteredData <- reactive({
     filtered_table <- full_omics_table %>%
       filter( Knockout %in% input$knockoutSelect, `Molecule Type` %in% input$moleculeInput )
     
@@ -64,5 +42,14 @@ shinyServer(function(input, output, session) {
     }
     
     filtered_table
-  })  
+  })
+  
+  output$volcanoPlot <- renderPlot({
+    ggplot( filteredData(), aes( x = `Mean log2FC`, y = -log10(`p-Value`), color = Significance, shape = `Molecule Type` ) ) +
+      xlab( expression(mean ~ log[2] ~ fold ~ change) ) +
+      ylab( expression(- log[10] ~ p ~ "-value") ) +
+      geom_point()
+  })
+
+  output$selectedData <- renderDataTable( filteredData() )  
 })
