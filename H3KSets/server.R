@@ -15,7 +15,8 @@ library(dplyr)
 full_omics_table <- readRDS( "data/full-omics-table.rds" ) %>%
   mutate( Significance = ifelse( `p-Value` < 0.05,
                                  ifelse( abs( `Mean log2FC` ) > 1, "p<0.5 and |log_2 FC|>1", "p<0.5" ),
-                                 "p>=0.05" ) )
+                                 "p>=0.05" ),
+          call = Significance == "p<0.5 and |log_2 FC|>1", "p<0.5" )
 
 knockouts <- unique( full_omics_table$Knockout )
 
@@ -31,8 +32,15 @@ shinyServer(function(input, output, session) {
     filtered_table <- full_omics_table %>%
       filter( Knockout %in% input$knockoutSelect, `Molecule Type` %in% input$moleculeInput )
     
-    #if( input$filterCommon )
-    #  filtered_table <- filtered_table %>% filter( )
+    if( input$filterCommon ){
+      select_molecules <- filtered_table %>%
+        group_by( `Molecule ID` ) %>%
+        summarize( common = all( call ) ) %>%
+        ungroup() %>%
+        filter( common )
+      
+      filtered_table <- inner_join( filtered_table, select_molecules, by = "Molecule ID" )
+    }
     
     ggplot( filtered_table, aes( x = `Mean log2FC`, y = -log10(`p-Value`), color = Significance, shape = `Molecule Type` ) ) +
       xlab( expression(mean ~ log[2] ~ fold ~ change) ) +
@@ -40,5 +48,21 @@ shinyServer(function(input, output, session) {
       geom_point()
     
   })
-  
+
+  output$selectedData <- renderDataTable({
+    filtered_table <- full_omics_table %>%
+      filter( Knockout %in% input$knockoutSelect, `Molecule Type` %in% input$moleculeInput )
+    
+    if( input$filterCommon ){
+      select_molecules <- filtered_table %>%
+        group_by( `Molecule ID` ) %>%
+        summarize( common = all( call ) ) %>%
+        ungroup() %>%
+        filter( common )
+      
+      filtered_table <- inner_join( filtered_table, select_molecules, by = "Molecule ID" )
+    }
+    
+    filtered_table
+  })  
 })
