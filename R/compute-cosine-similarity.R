@@ -58,11 +58,17 @@ norms <- dot_products %>% filter( a == b ) %>%
 
 # Get cosine simiarity = a.b/|a||b|
 similarities <- dot_products %>% filter( a != b ) %>%
-  left_join( norms, by( a = "v" ) ) %>% rename( a_norm = norm ) %>%
-  left_join( norms, by( b = "v" ) ) %>% rename( b_norm = norm ) %>%
+  left_join( norms, by = c( a = "v" ) ) %>% rename( a_norm = norm ) %>%
+  left_join( norms, by = c( b = "v" ) ) %>% rename( b_norm = norm ) %>%
   mutate( similarity = product/(a_norm*b_norm) ) %>%
   arrange( desc( abs( similarity ) ) )
 
 saveRDS( similarities, "processed-data/cosine-similarities.rds" )
 saveRDS( spread_table, "processed-data/spread-table-for-similarities.rds" )
+
+# notes: see https://stats.stackexchange.com/questions/85916/distribution-of-scalar-products-of-two-random-unit-vectors-in-d-dimensions
+# for null distribution of cosine similarities.
+# Having a null allows us to obtain p-values
+# For network we probably need to do multiple testing correction?
+
 
