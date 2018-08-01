@@ -24,6 +24,9 @@ n_proteins <- ( spread_table %>% filter( "Protein" == `Molecule Type` ) %>% summ
 # Make matrix-shaped df
 matrix_df <- spread_table %>% select( -`Molecule ID`, -`Molecule Name`, -`Molecule Type`, -id )
 
+# We use the number of dimensions (KOs) later
+n_kos <- ncol( matrix_df )
+
 # Get number of molecules for convenience
 n_molecules <- nrow( matrix_df )
 
@@ -71,4 +74,32 @@ saveRDS( spread_table, "processed-data/spread-table-for-similarities.rds" )
 # Having a null allows us to obtain p-values
 # For network we probably need to do multiple testing correction?
 
+# Bonferroni correction:
+alpha = 0.05 / nrow( similarities )
 
+# Cosine similarity p-Value:
+cutoff <- 1 - qbeta( alpha, (n_kos-1)/2, (n_kos-1)/2 ) * 2
+
+similarity_edges <- similarities %>% filter( abs(similarity ) > cutoff )
+
+similarity_nodes <-
+  left_join( union( similarity_edges %>% select( id = a ), similarity_edges %>% select( id = b ) ),
+             spread_table %>% select( id, Name = `Molecule Name`, Type = `Molecule Type` ),
+             by = "id" ) %>%
+             mutate( id = paste0( "M", id ) )
+
+# Cytoscape doesn't like integer IDs for some reason
+similarity_edges <- similarity_edges %>%
+  transmute( source = paste0( "M", a ), target = paste0( "M", b ), similarity )
+
+# Create cytoscape network with RCy3
+RCy3::createNetworkFromDataFrames( nodes = as.data.frame( similarity_nodes ),
+                                   edges = as.data.frame( similarity_edges ),
+                                   title = paste( "Cosine Similarity Network", date() ),
+                                   collection = "H3K Networks" )
+
+# Visual style
+RCy3::setNodeColorMapping( table.column = "Type",
+                           table.column.values = c("Protein", "Metabolite", "Lipid"),
+                           colors = c("#8888AA", "#AA4444", "#AAAA44"),
+                           mapping.type = "d" )
