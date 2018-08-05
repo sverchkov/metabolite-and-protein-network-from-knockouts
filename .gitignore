@@ -26,3 +26,5 @@ vignettes/*.pdf
 metabolite-and-protein-network-from-knockouts.Rproj
 # Temporary file created by vim
 *.swp
+# OSX files
+.DS_Store

@@ -45,3 +45,4 @@ tested_omics_table <- full_omics_table %>%
   summarize_at( vars( log2FC ), funs( `Mean log2FC` = mean, `SD of log2FC` = sd, `p-Value` = tTestPValue ) ) 
 
 saveRDS( tested_omics_table, "H3KExplorer/data/full-omics-table.rds")
+saveRDS( tested_omics_table, "processed-data/tested-omics-table.rds")
