@@ -13,7 +13,7 @@
 #' @return a data frame with two columns, n - node id (taken from a, b of input) and cluster - unique cluster ID.
 #' @import dplyr
 #' @import futile.logger
-inferCommunities <- function( similarities, save.file = NULL, full_trajectory = F ){
+inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_trajectory = F ){
 
   # Modularity = sum_c (e_cc - a_c^2)
   # where c - communities
