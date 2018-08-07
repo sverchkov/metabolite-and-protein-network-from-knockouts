@@ -181,14 +181,17 @@ voteForLabelPropagation <- function( edges, nodes ) {
 #' @import dplyr
 #' @import futile.logger
 #' @author Yuriy Sverchkov
-inferCommunitiesLP <- function( unique_edges, async_prop = .5 ){
+inferCommunitiesLP <- function( unique_edges, async_prop = .5, check_unique = F ){
   
   # For this algorithm it's more convenient to just have all edges listed twice
   flog.trace( "Converting distinct edges to bidirectional edges..." )
   edges <- union_all( select( unique_edges, src = a, tgt = b, weight ),
                       select( unique_edges, src = b, tgt = a, weight ) )
-  flog.trace( "Making sure edges are unique..." )
-  edges <- edges %>% distinct( src, tgt, .keep_all = T )
+  
+  if ( check_unique ) {
+    flog.trace( "Making sure edges are unique..." )
+    edges <- edges %>% distinct( src, tgt, .keep_all = T )
+  }
   
   # Create node table and initialize label table
   flog.trace( "Making node table..." )
