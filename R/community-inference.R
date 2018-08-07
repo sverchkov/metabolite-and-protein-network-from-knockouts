@@ -1,8 +1,4 @@
-#' Community detection
-#' 
-#' @author Yuriy Sverchkov
-
-#' Community detection
+#' Community detection, greedy algorithm
 #' 
 #' A naive implementation of community detection in a fully-connected weighted graph based on
 #' Newman ME, Girvan M. Finding and evaluating community structure in networks.
@@ -13,7 +9,8 @@
 #' @return a data frame with two columns, n - node id (taken from a, b of input) and cluster - unique cluster ID.
 #' @import dplyr
 #' @import futile.logger
-inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_trajectory = F ){
+#' @author Yuriy Sverchkov
+inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_trajectory = F, simplify = T, loop_limit = Inf ){
 
   # Modularity = sum_c (e_cc - a_c^2)
   # where c - communities
@@ -36,6 +33,90 @@ inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_traje
   
   # IMPLEMENTATION
   
+  my <- initCommunitySearch( similarities )
+  next_id <- max( my$membership$id ) + 1
+  
+  # For full trajectory
+  peak_number <- 1
+  prev_m_cost <- 0
+  
+  # The greedy iteration part
+  while ( nrow( my$communities ) > 0 ) {
+    merge_row <- filter( my$communities, cost == max( cost ) )
+    
+    if ( 1 != ( n_merge <- nrow( merge_row ) ) ){
+      flog.error( "The merge candidate is %s rows :/", merge_row )
+      if ( n_merge < 1 ) stop()
+      if ( n_merge > 1 ) merge_row = sample_n( merge_row, 1 )
+    }
+    
+    if ( 0 > ( m_cost <- merge_row$cost ) && 0 <= prev_m_cost ){
+      if ( full_trajectory ) {
+        my$membership[[paste("Peak", peak_number)]] <- my$membership$community
+        peak_number <- 1 + peak_number
+      } else {
+        flog.trace("Max merge cost is %s, we're done.", m_cost )
+        break;
+      }
+    }
+    prev_m_cost <- m_cost
+    
+    # We're going to call the two communities we're merging yin and yang as a shorthand
+    yin <- merge_row$a
+    yang <- merge_row$b
+    
+    flog.trace( "Merging %s with %s...", yin, yang )
+
+    ## Compute costs of merging with new community
+    right_communities <- my$communities %>%
+      filter( (a == yin) || (a == yang),
+              b != yin, b != yang ) %>%
+      rename( src = b, tgt = a )
+    left_communities <- my$communities %>%
+      filter( (b == yin) || (b == yang),
+              a != yin, a != yang ) %>%
+      rename( src = a, tgt = b )
+    
+    new_community_costs <- union_all( right_communities, left_communities ) %>%
+      group_by( src ) %>%
+      summarize( new_cost = sum( cost ) ) %>%
+      transmute( a = src, b = next_id, cost = new_cost )
+    
+    # Add to community table
+    my$communities <- union_all( 
+      filter( my$communities, a != yin, a != yang, b != yin, b != yang ),
+      new_community_costs )
+
+    flog.trace("...merged!")
+
+    # Update membership table
+    my$membership <- mutate( my$membership,
+                             community = if_else(
+                               (community == yin) | (community == yang),
+                               as.integer( next_id ), community ) )
+    
+    # Update next id
+    next_id <- 1 + next_id
+    
+    if( !is.null( save.file ) )
+      saveRDS( my$communities, save.file )
+    
+    iteration <-
+      if ( !exists( "iteration" ) ) 1
+      else 1 + iteration
+    if ( iteration >= loop_limit ) break;
+  }
+  
+  if ( simplify )
+    return ( my$membership )
+  else
+    return ( my )
+}
+
+#' Initialize community search objects
+#' 
+#' Initialize the communities and membership tables
+initCommunitySearch <- function( similarities ) {
   # Compute merge costs for initial nodes, prepare community indeces
   membership <- union( distinct( similarities, member = a ), distinct( similarities, member = b ) ) %>%
     arrange( member )
@@ -46,7 +127,6 @@ inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_traje
     membership <- mutate( membership, id = row_number() )
   
   membership <- mutate( membership, community = id )
-  next_id <- max( membership$id ) + 1
   
   # Compute total similarity
   total <- summarize( similarities, total = sum( similarity ) )$total
@@ -60,7 +140,7 @@ inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_traje
     similarities %>% group_by( b ) %>% summarize( deg = sum( similarity ) ) %>% ungroup() %>% rename( id = b ) ) %>%
     group_by( id ) %>% summarize( degree = sum( deg ) ) %>% ungroup()
   flog.trace( "Weighted degrees computed.")
-
+  
   # Convert similarities to community sum change
   flog.trace( "Converting similarities to community score change..." )
   communities <- similarities %>%
@@ -72,66 +152,85 @@ inferCommunitiesGreedily <- function( similarities, save.file = NULL, full_traje
   
   if ( convert_ids )
     communities <- communities %>%
-      left_join( select( membership, member, a_id = id ), by = c("a" = "member") ) %>%
-      left_join( select( membership, member, b_id = id ), by = c("b" = "member") ) %>%
-      select( a = a_id, b = b_id, cost )
+    left_join( select( membership, member, a_id = id ), by = c("a" = "member") ) %>%
+    left_join( select( membership, member, b_id = id ), by = c("b" = "member") ) %>%
+    select( a = a_id, b = b_id, cost )
   
   flog.trace( "Community score change computed." )
   
-  # For full trajectory
-  peak_number <- 1
-  prev_m_cost <- 0
+  return ( list( membership = membership, communities = communities ) )
+}
+
+voteForLabelPropagation <- function( edges, nodes ) {
+  left_join( edges, nodes, by = c( "src" = "node" ) ) %>%
+    group_by( tgt, label, add = F ) %>%
+    summarize( vote = sum( weight ) ) %>%
+    group_by( tgt, add = F ) %>%
+    filter( vote == max( vote ) ) %>%
+    select( node = tgt, new_label = label )
+}
+
+#' Community detection, label propagation
+#' 
+#' An implementation of community detection by label propagation in an undirected weighted graph based on
+#' Phys Rev E 76, 036106 (2007)
+#' 
+#' @param unique_edges a data frame with columns a, b, weight representing the connections between nodes.
+#' We assume undirected graph, and therefore b < a.
+#' @return a data frame with two columns, n - node id (taken from a, b of input) and cluster - unique cluster ID.
+#' @import dplyr
+#' @import futile.logger
+#' @author Yuriy Sverchkov
+inferCommunitiesLP <- function( unique_edges, async_prop = .5 ){
   
-  # The greedy iteration part
-  while ( nrow( communities ) > 0 ) {
-    merge_row <- filter( communities, cost == max( cost ) )
+  # For this algorithm it's more convenient to just have all edges listed twice
+  flog.trace( "Converting distinct edges to bidirectional edges..." )
+  edges <- union_all( select( unique_edges, src = a, tgt = b, weight ),
+                      select( unique_edges, src = b, tgt = a, weight ) )
+  flog.trace( "Making sure edges are unique..." )
+  edges <- edges %>% distinct( src, tgt, .keep_all = T )
+  
+  # Create node table and initialize label table
+  flog.trace( "Making node table..." )
+  nodes <- distinct( edges, node = src ) %>% mutate( label = node )
+  nodes_array <- nodes$node
+  
+  repeat {
+    flog.trace( "Label propagation: Number of communities: %s.", nrow( distinct( nodes, label ) ) )
     
-    if ( 1 != ( n_merge <- nrow( merge_row ) ) ){
-      flog.error( "The merge candidate is %s rows :/", merge_row )
-      if ( n_merge < 1 ) stop()
-      if ( n_merge > 1 ) merge_row = sample_n( merge_row, 1 )
-    }
+    # Select first batch of nodes to update
+    first_batch <- nodes %>% select( node ) %>% sample_frac(async_prop )
     
-    if ( 0 > ( m_cost <- merge_row$cost ) && 0 <= prev_m_cost ){
-      if ( full_trajectory ) {
-        membership[[paste("Peak", peak_number)]] <- membership$community
-        peak_number <- 1 + peak_number
-      } else {
-        flog.trace("Max merge cost is %s, we're done.", m_cost )
-        break;
-      }
-    }
-    prev_m_cost <- m_cost
+    # Propagate votes from first batch
+    first_batch_votes <- edges %>%
+      right_join( first_batch, by = c( "tgt" = "node" ) ) %>%
+      voteForLabelPropagation( nodes ) %>%
+      sample_n( 1 ) %>% ungroup()
     
-    m_ids <- merge_row[ c( "a", "b" ) ]
-    flog.trace( "Merging %s with %s...", merge_row$a, merge_row$b )
-
-    # Find all rows where selected communities appear
-    find_communities <- mutate( communities, target = ( a %in% m_ids ) || ( b %in% m_ids ) )
-    # Will remove them from the community table
+    # Update nodes
+    nodes <- left_join( nodes, first_batch_votes, by = "node" ) %>%
+      mutate( label = if_else( is.na( new_label ), label, new_label ) ) %>%
+      select( node, label )
     
-    # Compute costs of merging with new community
-    new_community_costs <-
-      union_all( communities %>% filter( a %in% m_ids, !( b %in% m_ids ) ) %>% rename( src = b, tgt = a ),
-                 communities %>% filter( b %in% m_ids, !( a %in% m_ids ) ) %>% rename( src = a, tgt = b ) ) %>%
-      group_by( src ) %>%
-      summarize( new_cost = sum( cost ) ) %>%
-      transmute( a = src, b = next_id, cost = new_cost )
+    # Get votes from all
+    votes <- voteForLabelPropagation( edges, nodes )
     
-    # Add to community table
-    communities <- union_all( filter( communities, !( a %in% m_ids ), !( b %in% m_ids ) ), new_community_costs )
-
-    flog.trace("...merged!")
-
-    # Update membership table
-    membership <- mutate( membership, community = if_else( community %in% m_ids, as.integer( next_id ), community ) )
+    # Check whether we're done
+    checks <- votes %>% ungroup() %>%
+      left_join( nodes, by = "node" ) %>%
+      group_by( node ) %>%
+      summarize( concensus = any( label == new_label ) ) %>%
+      ungroup() %>%
+      summarize( done = all( concensus ) )
     
-    # Update next id
-    next_id <- 1 + next_id
+    if ( checks$done ) break;
     
-    if( !is.null( save.file ) )
-      saveRDS( communities, save.file )
+    # Propagate votes from all
+    nodes <- votes %>%
+      sample_n( 1 ) %>%
+      ungroup() %>%
+      select( node, label = new_label )
   }
   
-  return ( list( communities = communities, membership = membership ) )
+  return ( nodes )
 }
