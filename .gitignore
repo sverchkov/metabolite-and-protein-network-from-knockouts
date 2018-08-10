@@ -28,3 +28,5 @@ metabolite-and-protein-network-from-knockouts.Rproj
 *.swp
 # OSX files
 .DS_Store
+# Markdown output
+*.html
