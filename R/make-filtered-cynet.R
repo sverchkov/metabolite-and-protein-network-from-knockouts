@@ -5,25 +5,8 @@
 # Libraries
 library("dplyr")
 
-# Load necessary data
-similarities <- readRDS( "processed-data/cosine-similarities.rds" )
-spread_table <- readRDS( "processed-data/spread-table-for-similarities.rds" )
-
-# notes: see https://stats.stackexchange.com/questions/85916/distribution-of-scalar-products-of-two-random-unit-vectors-in-d-dimensions
-# for null distribution of cosine similarities.
-# Having a null allows us to obtain p-values
-# For network we probably need to do multiple testing correction?
-
-# We are assuming that the non-KO columns in spread_table are Molecule ID, Molecule Name, Molecule Type, and id
-n_kos <- ncol( spread_tabe ) - 4
-
-# Bonferroni correction:
-alpha = 0.05 / nrow( similarities )
-
-# Cosine similarity p-Value:
-cutoff <- 1 - qbeta( alpha, (n_kos-1)/2, (n_kos-1)/2 ) * 2
-
-similarity_edges <- similarities %>% filter( abs(similarity ) > cutoff )
+# Load filtered similarities
+filtered_similarity <- readRDS( "processed-data/filtered-cosine-similarities.rds" )
 
 similarity_nodes <-
   left_join( union( similarity_edges %>% select( id = a ), similarity_edges %>% select( id = b ) ),
@@ -32,7 +15,7 @@ similarity_nodes <-
   mutate( id = paste0( "M", id ) )
 
 # Cytoscape doesn't like integer IDs for some reason
-similarity_edges <- similarity_edges %>%
+similarity_edges <- filtered_similarity %>%
   transmute( source = paste0( "M", a ), target = paste0( "M", b ), similarity )
 
 # Create cytoscape network with RCy3
