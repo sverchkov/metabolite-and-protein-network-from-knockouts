@@ -53,6 +53,10 @@ molecule_table <- molecule_table %>%
   mutate( `Molecule ID` = if_else( (`Molecule ID` == "CoQ10") & (`KEGG ID` == ""),
                                    "CoQ10.", `Molecule ID` ) )
 
+# Pretty sure this one KEGG ID is wrong
+molecule_table <- molecule_table %>%
+  mutate( `KEGG ID` = if_else( `KEGG ID` == "C0023", "C00233", `KEGG ID` ) )
+
 # Merge with spread_table to get integer IDs
 molecule_ids <- full_join( molecule_id_table, molecule_table, by = c( "Molecule ID", "Molecule Name", "Molecule Type" ) )
 
