@@ -12,3 +12,6 @@ metabolomics <- my.read( "raw-data/20180322_H3K_Batches1and2_Metabolomics.csv" )
 metabolomics_unimputed <- my.read( "raw-data/20180322_H3K_Batches1and2_Metabolomics_Unimputed.csv" )
 
 lipidomics <- my.read( "raw-data/20180322_H3K_Batches1and2_Lipidomics.csv" )
+
+# Trim extra lipidomic columns
+lipidomics <- lipidomics[,1:122]

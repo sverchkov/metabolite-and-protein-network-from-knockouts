@@ -5,12 +5,7 @@ library(dplyr)
 # Load all the molecule table
 source("R/load-data.R")
 
-# Load the table with my integer IDs
-spead_table <- readRDS( "processed-data/spread-table-for-similarities.rds" )
-
 # Select out the columns we care about from all the tables
-molecule_id_table <- spead_table[c("Molecule ID", "Molecule Name", "Molecule Type", "id")]
-
 lipid_ids <- lipidomics[c("Lipid", "KEGG ID")]
 
 metabolite_ids <- bind_rows(
@@ -39,8 +34,7 @@ molecule_table <- bind_rows(
                `KEGG ID` = `KEGG IDs`,
                `Molecule Type` = "Metabolite"),
   protein_ids %>% distinct() %>%
-    transmute( `Molecule ID` = `Fasta headers`, # Ideally we would want this in to be `Majority protein IDs`,
-               `Protein ID` = `Majority protein IDs`, # Remove when above updated.
+    transmute( `Molecule ID` = `Majority protein IDs`,
                `Molecule Name` = `Protein names`,
                `Protein Gene` = `Gene names`,
                FASTA = `Fasta headers`,
@@ -58,6 +52,6 @@ molecule_table <- molecule_table %>%
   mutate( `KEGG ID` = if_else( `KEGG ID` == "C0023", "C00233", `KEGG ID` ) )
 
 # Merge with spread_table to get integer IDs
-molecule_ids <- full_join( molecule_id_table, molecule_table, by = c( "Molecule ID", "Molecule Name", "Molecule Type" ) )
+molecule_ids <- molecule_table %>% mutate( id = row_number() )
 
 saveRDS( molecule_ids, "processed-data/molecule-ids.rds" )

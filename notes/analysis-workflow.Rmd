@@ -1,0 +1,52 @@
+---
+title: "Analysis Workflow"
+author: "Yuriy Sverchkov"
+date: "9/6/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data loading and preprocessing
+
+### Load data
+```{r eval = F}
+source( "R/load-data.R" )
+```
+
+### Make molecule ID table
+```{r eval = F}
+source( "R/make-master-molecule-id-table.R")
+```
+
+### Make long table
+```{r eval = F}
+source( "R/make-long-table.R")
+```
+
+### Run t-tests
+```{r eval = F}
+source( "R/t-test-long-table.R")
+```
+
+### Making feature matrix
+```{r eval = F}
+library( dplyr )
+library( tidyr )
+
+feature_df <- tested_table %>%
+  select( `Molecule ID`, Knockout, `t statistic` ) %>%
+  spread( key = Knockout, value = `t statistic` )
+
+```
+
+## Analysis
+
+### Correlational network analysis
+
+### Factor Graph Nested Effects Model
+
+### Backgroun network mapping
+
