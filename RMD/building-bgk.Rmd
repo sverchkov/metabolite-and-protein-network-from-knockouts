@@ -1,0 +1,84 @@
+---
+title: "Extracting background knowledge networks"
+author: "Yuriy Sverchkov"
+date: "October 1, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In our data we have:
+
+ * Perturbed entities, which are genes and/or open reading frames that have been knocked out by CRISPR
+ * Measured entities, differential abundances of which have been measured by mass spectrometry, which include:
+    * Proteins
+    * Metabolites
+    * Lipids
+   
+Using statistical methods we build networks among these entities, such as nested effects models and correlational networks.
+
+We wish to be able to annotate these networks using available background knowledge about the relations between entities, such as metabolic pathways and signaling pathways.
+Available sources of background knowledge include:
+
+ * KEGG
+ * BioCyc
+ * ..[todo]
+ 
+## Workflow
+
+The workflow for accomplishing this task involves:
+
+ 1. Establishing unique IDs for the perturbed and measured entities
+ 2. Building inferred networks using the data-driven method
+ 3. Mapping our unique IDs to the IDs used by the background knowledge sources
+ 4. Extracting the relation information from the background knowledge sources
+ 5. Annotating the learned networks
+ 
+### Establishing unique IDs
+
+The unique IDs we use for our data are:
+
+ * Knockouts: Gene name/ORF number
+ * Proteins: UNIPROT IDs (Each measured protein corresponds to a string of one or more UNIPROT IDs.)
+ * Metabolites: [todo]
+ * Lipids: [todo]
+ 
+### Building inferred networks
+
+See other docs?
+
+### Mapping to knowledge source IDs
+
+For each knowledge source the mappings are as follows:
+
+ * KEGG
+    * Proteins: Uniprot IDs mapped to HSA numbers
+    * Metabolites:
+    * Lipids:
+ * 2nd source
+    * Proteins:
+    * Metabolites:
+    * Lipids:
+
+### Extracting the relation information
+
+Our data entails multiple possible types of relations, and each type may match multiple data sources
+
+| Relation | KEGG | Source 2 | ... |
+|----------|------|----------|-----|
+| KO-KO
+| KO-Protein
+| KO-Metabolite
+| KO-Lipid
+| Protein-Protein
+| Protein-Metabolite
+| Protein-Lipid
+| Metabolite-Metabolite
+| Metabolite-Lipid
+| Lipid-Lipid
+
+### Annotating the networks
+
+List the r filed that do this?
