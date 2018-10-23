@@ -40,11 +40,22 @@ feature_df <- tested_table %>%
   select( `Molecule ID`, Knockout, `t statistic` ) %>%
   spread( key = Knockout, value = `t statistic` )
 
+saveRDS( feature_df, "processed-data/feature_t_df.rds" )
+```
+
+```{r echo=FALSE, results='asis'}
+if ( any( is.na( feature_df ) ) )
+  cat("**Note:** `feature_df` contains `NA` values.")
 ```
 
 ## Analysis
 
 ### Correlational network analysis
+
+#### Obtain correlation matrix
+```{r eval = F}
+source( "R/compute-cosine-smimilarity.R" ) # Takes a while, best to run in separate process. Condor version also exists.
+```
 
 ### Factor Graph Nested Effects Model
 

@@ -5,24 +5,13 @@ library("futile.logger")
 flog.threshold(TRACE)
 
 # Load table
-tested_omics_table <- readRDS( "processed-data/tested-omics-table.rds" )
+feature_df <- readRDS( "processed-data/feature_t_df.rds" )
 
-# Make table shape
-spread_table <- tested_omics_table %>%
-  mutate( t = `Mean log2FC`/`SD of log2FC` ) %>%
-  tidyr::spread( key = Knockout, value = t, fill = 0 ) %>%
-  select( -`Mean log2FC`, -`SD of log2FC`, -`p-Value` ) %>%
-  group_by( `Molecule ID`, `Molecule Name`, `Molecule Type` ) %>%
-  summarize_all( sum ) %>%
-  ungroup() %>%
-  arrange( desc(`Molecule Type`), `Molecule ID` ) %>%
-  mutate( id = dplyr::row_number() )
+# Get the id list for future reference
+id_list <- pull( feature_df, `Molecule ID` )
 
-# Figure out how many proteins there are
-n_proteins <- ( spread_table %>% filter( "Protein" == `Molecule Type` ) %>% summarize( count=n() ) )$count
-
-# Make matrix-shaped df
-matrix_df <- spread_table %>% select( -`Molecule ID`, -`Molecule Name`, -`Molecule Type`, -id )
+# Drop ID column
+matrix_df <- feature_df %>% select( -`Molecule ID` )
 
 # Get number of molecules for convenience
 n_molecules <- nrow( matrix_df )
@@ -38,8 +27,8 @@ added_rows <- 0
 for ( a in 1:n_molecules ){
   v1 <- as.vector( matrix_df[a,] )
   block <- bind_rows( Map( function ( b ) {
-      prd <- sum( as.vector( matrix_df[b,] ) * v1 )
-      tibble( a = a, b = b, product = prd )
+      prd <- sum( as.vector( matrix_df[b,] ) * v1, na.rm = T )
+      tibble( a = id_list[a], b = id_list[b], product = prd )
     }, 1:a ) )
   
   dot_products <- rbind( dot_products, block )
@@ -47,7 +36,7 @@ for ( a in 1:n_molecules ){
   if ( added_rows > 10000 ){
     result_rows <- result_rows + added_rows
     added_rows <- 0
-    flog.trace("Computed %s of %s dot products (%s%%)", result_rows, n_dots, 100*result_rows/n_dots )
+    flog.trace("Computed %s of %s dot products (%7.3f%%)", result_rows, n_dots, 100*result_rows/n_dots )
     saveRDS( dot_products, "processed-data/dot-products.rds" )
   }
 }
@@ -64,4 +53,3 @@ similarities <- dot_products %>% filter( a != b ) %>%
   arrange( desc( abs( similarity ) ) )
 
 saveRDS( similarities, "processed-data/cosine-similarities.rds" )
-saveRDS( spread_table, "processed-data/spread-table-for-similarities.rds" )
