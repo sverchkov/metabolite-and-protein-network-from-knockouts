@@ -1,0 +1,25 @@
+# The Parameter Preparation Condor Job
+
+universe = vanilla
++WantFlocking = True
++WantGlideIn = True
+
+executable = /home/sverchkov/scripts/condor_run_r.sh
+
+#log = logs/log.$(Cluster).$(Process).txt
+# no input
+#output = logs/out.$(Cluster).$(Process).txt
+#error = logs/err.$(Cluster).$(Process).txt
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = /home/sverchkov/R-bundles/R.tar.gz,do-dot-block.R,feature_t_df.rds
+transfer_output_files = result.rds
+transfer_output_remaps = "result.rds=$(result)" 
+
+arguments = do-dot-block.R feature_t_df.rds $(n) result.rds
+
+request_memory = 4G
+request_disk = 1G
+
+queue
