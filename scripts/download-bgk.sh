@@ -3,6 +3,9 @@
 dir=raw-bgk
 
 mkdir -p ${dir}
-echo "Created by scripts/download-bgk.sh" > ${dir}/README
+cd ${dir}
 
-curl https://stringdb-static.org/download/protein.links.v10.5.txt.gz -o ${dir}/protein.links.v10.5.txt.gz
+echo "Created by scripts/download-bgk.sh" > README
+
+curl https://stringdb-static.org/download/protein.links.v10.5.txt.gz -o protein.links.v10.5.txt.gz
+gunzip protein.links.v10.5.txt.gz

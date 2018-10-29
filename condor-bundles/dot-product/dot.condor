@@ -2,9 +2,9 @@
 
 universe = vanilla
 +WantFlocking = True
-+WantGlideIn = True
+#+WantGlideIn = True
 
-executable = /home/sverchkov/scripts/condor_run_r.sh
+executable = condor_run_r.sh
 
 #log = logs/log.$(Cluster).$(Process).txt
 # no input
