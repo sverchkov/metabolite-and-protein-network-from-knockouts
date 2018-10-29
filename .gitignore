@@ -30,3 +30,4 @@ metabolite-and-protein-network-from-knockouts.Rproj
 .DS_Store
 # Markdown output
 *.html
+raw-bgk
