@@ -31,3 +31,5 @@ metabolite-and-protein-network-from-knockouts.Rproj
 # Markdown output
 *.html
 raw-bgk
+# Specific files
+condor-bundles/dot-product/assume-r-dots.dag
