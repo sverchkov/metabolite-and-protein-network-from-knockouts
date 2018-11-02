@@ -1,6 +1,7 @@
 # What I tried to do for presentation July 30, 2018
 library("dplyr")
 library("futile.logger")
+library("parallel")
 
 flog.threshold(TRACE)
 
@@ -10,36 +11,56 @@ feature_df <- readRDS( "processed-data/feature_t_df.rds" )
 # Get the id list for future reference
 id_list <- pull( feature_df, `Molecule ID` )
 
-# Drop ID column
+# Remove id column to get matrix
 matrix_df <- feature_df %>% select( -`Molecule ID` )
 
 # Get number of molecules for convenience
 n_molecules <- nrow( matrix_df )
 
+# Get a list of row vectors
+vectors <- lapply( 1:n_molecules, function( n ) as.vector( matrix_df[n,] ) )
+
 # Estimate the number of dot products we will compute
 n_dots <- n_molecules * (n_molecules + 1)/2
 
-# Get dot products, progressive computation
-dot_products <- NULL
-result_rows <- 0
-added_rows <- 0
+# Define pattern for intermediate files
+filepattern <- "temporary-data/dot-products/dots-%d.rds"
 
-for ( a in 1:n_molecules ){
-  v1 <- as.vector( matrix_df[a,] )
-  block <- bind_rows( Map( function ( b ) {
-      prd <- sum( as.vector( matrix_df[b,] ) * v1, na.rm = T )
-      tibble( a = id_list[a], b = id_list[b], product = prd )
-    }, 1:a ) )
+# Get dot products, parallel computation on the lower-level
+cl <- makeCluster( detectCores()-1 )
+added_rows <- 0
+result_rows <- 0
+for ( n in 1:n_molecules ){
   
-  dot_products <- rbind( dot_products, block )
-  added_rows <- added_rows + nrow( block )
+  outfile <- sprintf( filepattern, n )
+  
+  if( !file.exists( outfile ) ){
+    
+    block <- tibble(
+      a = id_list[n],
+      b = id_list[1:n],
+      product = parSapply(
+        cl,
+        vectors[1:n],
+        function ( v1, v2 ) sum( v1 * v2, na.rm = T ),
+        vectors[n] )
+      )
+    
+    saveRDS( block, outfile )
+  }
+  
+  added_rows <- added_rows + n
   if ( added_rows > 10000 ){
     result_rows <- result_rows + added_rows
     added_rows <- 0
     flog.trace("Computed %s of %s dot products (%7.3f%%)", result_rows, n_dots, 100*result_rows/n_dots )
-    saveRDS( dot_products, "processed-data/dot-products.rds" )
   }
 }
+
+# Read files into one table
+flog.trace( "Reading temp files into one table..." )
+dot_products <- bind_rows( lapply( 1:n_molecules, function( a ) readRDS( sprintf( filepattern, a ) ) ) )
+flog.trace( "...table ready." )
 
 # Get norms
 norms <- dot_products %>% filter( a == b ) %>%
