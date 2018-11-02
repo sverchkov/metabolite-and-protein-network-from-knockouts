@@ -1,0 +1,18 @@
+# Dot product computation Condor job
+
+universe = vanilla
+
+executable = run_r.sh
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+transfer_input_files = do-dot-block.R,feature_t_df.rds
+transfer_output_files = result.rds
+transfer_output_remaps = "result.rds=$(result)" 
+
+arguments = do-dot-block.R feature_t_df.rds $(n) result.rds
+
+request_memory = 4G
+request_disk = 1G
+
+queue
