@@ -43,7 +43,7 @@ for ( n in 1:n_molecules ){
         cl,
         vectors[1:n],
         function ( v1, v2 ) sum( v1 * v2, na.rm = T ),
-        vectors[n] )
+        vectors[[n]] )
       )
     
     saveRDS( block, outfile )
