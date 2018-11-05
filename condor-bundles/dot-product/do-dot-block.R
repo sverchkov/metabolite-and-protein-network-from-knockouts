@@ -21,7 +21,7 @@ v1 <- as.vector( feature_df[n,-1] )
 
 block <- do.call( rbind, lapply( 1:n, function ( b ) {
   prd <- sum( as.vector( feature_df[b,-1] ) * v1, na.rm = T )
-  data.frame( a = feature_df[n,1], b = feature_df[b,1], product = prd )
+  data.frame( a = feature_df[n,1], b = feature_df[b,1], product = prd, stringsAsFactors = FALSE )
 } ) )
 
 saveRDS( block, file = out_file )
