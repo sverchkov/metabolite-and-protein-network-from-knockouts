@@ -1,0 +1,21 @@
+---
+title: "STRING workflow"
+author: "Yuriy Sverchkov"
+date: "11/5/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This file describes how we prepare the information from [STRING](https://string-db.org) for our analysis.
+
+STRING provides protein-protein interaction data.
+The data is available in several large files online.
+Our workflow is as follows:
+
+ 1. Download the data (see `scripts/download-bgk.sh`). This downloads annotated protein-protein interactions ("protein actions") and a mapping file for mapping between STRING and Uniprot IDs.
+ 2. The above script also filters the (quite large) protein interaction table to only interactions involving human proteins.
+ 3. Build a map between STRING IDs and the Uniprot IDs that appear in our data. For this we use `R/load-string-db.R`.
+

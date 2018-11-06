@@ -57,6 +57,11 @@ if ( any( is.na( feature_df ) ) )
 source( "R/compute-cosine-smimilarity.R" ) # Takes a while, best to run in separate process. Condor version also exists.
 ```
 
+#### Filter correlations
+```{r eval = F}
+source( "R/?" )
+```
+
 ### Factor Graph Nested Effects Model
 
 ### Background network mapping

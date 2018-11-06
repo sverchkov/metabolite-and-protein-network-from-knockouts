@@ -15,7 +15,8 @@ u2s_map <-
 colnames( u2s_map ) <- c( "species", "uniprot_both", "string_id", "identity", "bit_score" )
 
 u2s_map <- u2s_map %>%
-  mutate( uniprot_acc = sapply( strsplit( uniprot_both, split = "|", fixed = TRUE ), function(x) x[1] ) )
+  mutate(
+    uniprot_acc = sapply( strsplit( uniprot_both, split = "|", fixed = TRUE ), function(x) x[1] ) )
 
 molecule_ids <- readRDS( "processed-data/molecule-ids.rds" )
 
@@ -36,7 +37,9 @@ my_uniprot <- bind_rows(
 
 # Our uniprot IDs are accession numbers
 
-my_string_map <- left_join( my_uniprot, u2s_map, by = c("uniprot_id" = "uniprot_acc" ) )
+my_string_map <-
+  left_join( my_uniprot, u2s_map, by = c("uniprot_id" = "uniprot_acc" ) ) %>%
+  mutate( string_long = paste0( species, ".", string_id ) )
 
 # (Optional, for diagnostics)
 
@@ -56,3 +59,11 @@ inverse_mapping_statistics <- my_string_map %>%
   mutate( count_me = if_else( is.na( `Molecule ID` ), 0L, 1L ) ) %>%
   summarize( n_matches = sum( count_me ) )
 
+# Load STRING interaction table
+string_interactions <-
+  read.table( "/Volumes/LaCie/yuriy/string-db/human.protein.actions.txt",
+              header = T,
+              sep = "\t",
+              check.names = F,
+              strip.white = T,
+              stringsAsFactors = F )

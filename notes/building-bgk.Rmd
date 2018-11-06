@@ -23,8 +23,7 @@ We wish to be able to annotate these networks using available background knowled
 Available sources of background knowledge include:
 
  * KEGG
- * BioCyc
- * ..[todo]
+ * [STRING](https://string-db.org)
  
 ## Workflow
 
@@ -47,7 +46,7 @@ The unique IDs we use for our data are:
  
 ### Building inferred networks
 
-See other docs?
+See [[analysis-workflow]] and perhaps other docs?
 
 ### Mapping to knowledge source IDs
 
@@ -57,8 +56,8 @@ For each knowledge source the mappings are as follows:
     * Proteins: Uniprot IDs mapped to HSA numbers
     * Metabolites:
     * Lipids:
- * 2nd source
-    * Proteins:
+ * STRING
+    * Proteins: Uniprot IDs mapped to STRING IDs using provided mapping file
     * Metabolites:
     * Lipids:
 
@@ -66,13 +65,13 @@ For each knowledge source the mappings are as follows:
 
 Our data entails multiple possible types of relations, and each type may match multiple data sources
 
-| Relation | KEGG | Source 2 | ... |
+| Relation | KEGG | STRING | ... |
 |----------|------|----------|-----|
 | KO-KO
 | KO-Protein
 | KO-Metabolite
 | KO-Lipid
-| Protein-Protein
+| Protein-Protein |  | protein actions file
 | Protein-Metabolite
 | Protein-Lipid
 | Metabolite-Metabolite
@@ -81,4 +80,4 @@ Our data entails multiple possible types of relations, and each type may match m
 
 ### Annotating the networks
 
-List the r filed that do this?
+List the r files that do this?
