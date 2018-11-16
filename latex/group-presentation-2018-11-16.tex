@@ -1,0 +1,129 @@
+% !TEX encoding = UTF-8 Unicode
+
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+
+%% BIB
+%\usepackage[
+%  style=authoryear,
+%  backend=biber,
+%  url=false,
+%  maxcitenames=2,
+%  uniquename=false,
+%  uniquelist=false
+%]{biblatex}
+%\addbibresource{?.bib}
+
+%% GRAPHICS
+
+\usepackage{graphicx}
+\graphicspath{{../images/},{../figures/}}
+\usepackage{tikz}
+
+%% COLORS
+\definecolor{UWRed}{HTML}{C5050C}
+\definecolor{TintedBG}{HTML}{EEEEFF}
+%\definecolor{StrongBlue}{HTML}{3F8FD2}
+%\definecolor{StrongGreen}{HTML}{36C88E}
+%\definecolor{StrongRed}{HTML}{9B0000}
+%\definecolor{MyC}{HTML}{009999}
+%\definecolor{MyM}{HTML}{990099}
+%\definecolor{MyY}{HTML}{999900}
+%\definecolor{MyR}{HTML}{990000}
+%\definecolor{MyG}{HTML}{009900}
+%\definecolor{MyB}{HTML}{000099}
+%\definecolor{ActionRed}{HTML}{990000}
+
+%% SLIDE COLOR SETTINGS
+\setbeamercolor{structure}{fg=UWRed}
+%\setbeamercolor{title page}{fg=white}
+%\setbeamercolor{title}{fg=white}
+
+%% RM NAV SYMBOLS
+\setbeamertemplate{navigation symbols}{}
+
+%% FONTS
+\setbeamerfont{title}{size=\huge\bfseries}
+
+%% DRAWING
+%\usetikzlibrary{}
+
+%% LOGO on slides
+\logo{\begin{tikzpicture}[overlay]
+  \node[anchor=north east,inner sep=0] at (0,86mm) {\includegraphics[height=10mm]{SMPH_color-flush.pdf}};
+\end{tikzpicture}}
+
+%% CONTENT BEGINS
+
+\title{Analysis of high-throughput mass spectrometry of CRISPR knockout cells}
+\subtitle{Craven Lab Group Meeting}
+\author{Yuriy Sverchkov}
+\institute{University of Wisconsin--Madison}
+\date{November 16, 2018}
+
+\begin{document}
+
+  {
+    %\setbeamertemplate{background canvas}{\includegraphics[width=\paperwidth]{UW-lake.png}}
+    \begin{frame}[plain]
+      %\vskip2cm
+      \titlepage
+    \end{frame}
+  }
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{The H3K Project}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{The data}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Building a correlational network}
+\begin{columns}
+	\column{0.5\textwidth} \small
+	Similarity measure between molecules $i$ and $j$
+	\begin{itemize}
+		\item Euclidean Distance:
+		\[
+		\sqrt{ \sum_{k} (x_{ik} - x_{jk})^2 }
+		\]\pause
+		\item Pearson Correlation:
+		\[
+		\frac{\sum_k ( x_{ik} - \bar{x_k} ) ( x_{jk} - \bar{ x_k } ) }{ \sqrt{ \sum_k ( x_{ik} - \bar{x_k} )^2 } \sqrt{ \sum_k ( x_{jk} - \bar{ x_k } )^2 } }
+		\]\pause
+		\item Cosine Similarity:
+		\[
+		\frac{\sum_k x_{ik} x_{jk}}{ \sqrt{ \sum_k x_{ki\strut}^2 } \sqrt{ \sum_k x_{jk\strut}^2 } }
+		\]\pause
+	\end{itemize}
+	\column{0.47\textwidth} \small
+	Thresholding rule to obtain a network from pairwise cosine similarities based on a null distribution:
+	\pause
+	
+	\begin{itemize}
+	\item $t \sim$ cosine similarity of two random (i.i.d. normal) vectors in $\mathbb R^K$
+	\item $(t + 1)/2 \sim \mathrm{Beta}( \frac{K - 1}{2}, \frac{K - 1}{2} )$ \pause
+	\item Using a Bonferroni correction $\alpha = 0.5/M$
+	\item Keep $s_{ij}:$
+	\[ | s_{ij} | > 1 - 2 P\left( \mathrm{Beta}\left( \frac{K - 1}{2}, \frac{K - 1}{2} \right) > \alpha \right) \]
+	\end{itemize}
+\end{columns}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Cosine similarity network}
+%\includegraphics
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Building a nested effects model}
+\end{frame}
+
+\end{document}
