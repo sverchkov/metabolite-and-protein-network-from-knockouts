@@ -27,4 +27,4 @@ gunzip protein.actions.v10.5.txt.gz
 #   /626523\./ - apply command to lines containing "626523." (the . is escaped since this is regex)
 #   p - print
 # NOTE: 626523 designates the species (human) in string-db
-sed -n '1p;/626523\./p' protein.actions.v10.5.txt > human.protein.actions.txt
+sed -n '1p;/9606\./p' protein.actions.v10.5.txt > human.protein.actions.txt
