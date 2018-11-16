@@ -90,22 +90,31 @@ found_string_pp <-
   )
 saveRDS( found_string_pp, "temporary-data/found_string_pp.rds" )
 
+string_annotations <- found_string_pp %>%
+  group_by( a, b ) %>%
+  distinct( mode ) %>%
+  arrange( mode ) %>%
+  summarize( string_annotation = paste( mode, collapse = ", " ) )
+
 # Protein-protein edges based on KEGG are annotated by common pathways
 found_pp <- edges_pp %>%
   inner_join( distinct( protein_map, a = `Molecule ID`, a_hsa = hsa_code ), by = "a" ) %>%
   inner_join( distinct( protein_map, b = `Molecule ID`, b_hsa = hsa_code ), by = "b" )
 
-annotations_pp <- bind_rows(
+kegg_annotations_pp <- bind_rows(
   found_pp %>%
     filter( a_hsa != b_hsa ) %>%
     inner_join( distinct( hsa_pathway_map, a_hsa = hsa_code, pathway ), by = "a_hsa" ) %>%
     inner_join( distinct( hsa_pathway_map, b_hsa = hsa_code, pathway ), by = c( "b_hsa", "pathway" ) ) %>%
     group_by( a, b ) %>%
-    summarize( annotation = paste( pathway, collapse = "; " ) ),
+    summarize( kegg_annotation = paste( pathway, collapse = "; " ) ),
   found_pp %>%
     filter( a_hsa == b_hsa ) %>%
-    mutate( annotation = "Same KEGG ID" )
+    mutate( kegg_annotation = "Same KEGG ID" )
 )
+
+annotations_pp <- full_join( kegg_annotations_pp, string_annotations, by = c( "a", "b" ) ) %>%
+  mutate( annotation = paste( na.omit( c( string_annotation, kegg_annotation ) ), collapse = "; " ) )
 
 found_cc <- edges_cc %>%
   inner_join( distinct( compound_map, a = `Molecule ID`, a_cpd = compound ), by = "a" ) %>%
