@@ -94,7 +94,8 @@ string_annotations <- found_string_pp %>%
   group_by( a, b ) %>%
   distinct( mode ) %>%
   arrange( mode ) %>%
-  summarize( string_annotation = paste( mode, collapse = ", " ) )
+  summarize( string_annotation = paste( mode, collapse = ", " ) ) %>%
+  ungroup()
 
 # Protein-protein edges based on KEGG are annotated by common pathways
 found_pp <- edges_pp %>%
@@ -107,12 +108,12 @@ kegg_annotations_pp <- bind_rows(
     inner_join( distinct( hsa_pathway_map, a_hsa = hsa_code, pathway ), by = "a_hsa" ) %>%
     inner_join( distinct( hsa_pathway_map, b_hsa = hsa_code, pathway ), by = c( "b_hsa", "pathway" ) ) %>%
     group_by( a, b ) %>%
-    summarize( kegg_annotation = paste( pathway, collapse = "; " ) ),
+    summarize( kegg_annotation = paste( pathway, collapse = "; " ) ) %>%
+    ungroup(),
   found_pp %>%
     filter( a_hsa == b_hsa ) %>%
     mutate( kegg_annotation = "Same KEGG ID" )
 )
-
 annotations_pp <- full_join( kegg_annotations_pp, string_annotations, by = c( "a", "b" ) ) %>%
   mutate( annotation = paste( na.omit( c( string_annotation, kegg_annotation ) ), collapse = "; " ) )
 

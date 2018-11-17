@@ -74,11 +74,41 @@
 %%% FRAMEBREAK %%%
 
 \begin{frame}{The H3K Project}
+\begin{columns}
+	\column{0.4\textwidth}
+\begin{itemize}
+	\item Goal: Study mitochondrial function
+	\item Mitochondrial dysfunction is associated with various diseases of interest
+	\item However, many of the molecular processes involved are poorly characterized
+	\item Approach: Multi-omic measurements of CRISPR knockout cell lines
+\end{itemize}
+\column{0.57\textwidth}
+\includegraphics[width=\textwidth]{h3k-knockouts}
+\end{columns}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}[plain]
+\includegraphics[width=\linewidth]{h3k-tech}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}[plain]
+\includegraphics[width=\linewidth]{h3k-molecules}
 \end{frame}
 
 %%% FRAMEBREAK %%%
 
 \begin{frame}{The data}
+\begin{itemize}
+	\item Currently working with $K=29$ (sentinel) knockouts and $M=13080$ measured biomolecules
+	\item We are interested in the relative effect of a KO on the measurements
+	\item Analyses in the following is all based on log-2-fold-change of molecule abundance in KO with respect to wild type
+	\item $x_{mk} =$ $t$-statistic of $\log_2$-fold-change in the abundance of molecule $m$ in KO $k$ with respect to wild type, taken over replicates
+	\item[] $\left( \frac{\text{mean}}{\text{stdev}\times \sqrt{\text{\# replicates}} } \right)$
+\end{itemize}
 \end{frame}
 
 %%% FRAMEBREAK %%%
@@ -96,7 +126,7 @@
 		\[
 		\frac{\sum_k ( x_{ik} - \bar{x_k} ) ( x_{jk} - \bar{ x_k } ) }{ \sqrt{ \sum_k ( x_{ik} - \bar{x_k} )^2 } \sqrt{ \sum_k ( x_{jk} - \bar{ x_k } )^2 } }
 		\]\pause
-		\item Cosine Similarity:
+		\item Cosine Similarity: \alert{$\leftarrow$ our choice}
 		\[
 		\frac{\sum_k x_{ik} x_{jk}}{ \sqrt{ \sum_k x_{ki\strut}^2 } \sqrt{ \sum_k x_{jk\strut}^2 } }
 		\]\pause
@@ -110,7 +140,7 @@
 	\item $(t + 1)/2 \sim \mathrm{Beta}( \frac{K - 1}{2}, \frac{K - 1}{2} )$ \pause
 	\item Using a Bonferroni correction $\alpha = 0.5/M$
 	\item Keep $s_{ij}:$
-	\[ | s_{ij} | > 1 - 2 P\left( \mathrm{Beta}\left( \frac{K - 1}{2}, \frac{K - 1}{2} \right) > \alpha \right) \]
+	\[ | s_{ij} | > 1 - 2 \mathrm{cdf}^{-1}_{\mathrm{Beta}\left( \frac{K - 1}{2}, \frac{K - 1}{2} \right) }\left(  \alpha \right) \]
 	\end{itemize}
 \end{columns}
 \end{frame}
@@ -118,12 +148,93 @@
 %%% FRAMEBREAK %%%
 
 \begin{frame}{Cosine similarity network}
-%\includegraphics
+\begin{columns}
+	\column{0.7\textwidth}
+	\includegraphics[width=\textwidth]{full-similarity-network.png}
+	\column{0.27\textwidth}
+	\begin{tabular}{l|r}
+		\multicolumn{2}{c}{Connected Nodes} \\ \hline
+		Proteins & 2130 \\
+		Metabolites & 133 \\
+		Lipids & 1742 \\ \hline
+		Total & 4005 \\ \hline \hline
+		\multicolumn{2}{c}{Edges} \\ \hline
+		P-P & 9585 \\
+		P-M & 397 \\
+		P-L & 2743 \\
+		M-M & 183 \\
+		M-L & 572 \\
+		L-L & 11113 \\ \hline
+		Total & 24593
+	\end{tabular}
+\end{columns}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Cosine similarity network annotation}
+Checking the network against known interaction databases by ``annotating'' it, i.e., matching network edges to documented interactions
+
+\begin{itemize}
+	\item STRING Consortium protein-protein interaction database
+	\item KEGG interactions:
+	\begin{itemize}
+		\item \textbf{Compound} (Metabolite or Lipid) \textbf{- Compound} interactions: do the two compounds participate in the same reaction
+		\item \textbf{Protein - Compound} interactions: does the protein map to an enzyme that participates in a reaction with the compound
+		\item \textbf{Protein - Protein} interactions: do the two proteins share a pathway
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Annotated similarity network statistics}
+\centering
+\begin{tabular}{c|r|crr}
+	\multicolumn{2}{c}{Similarity Edges} & STRING & KEGG interaction & KEGG ID collision \\ \hline
+	P-P & 9585 & 100 (23 overlap) & 185 & 1 \\
+	P-M & 397 & & 0 & \\
+	P-L & 2743 & & 0 & \\
+	M-M & 183 & & 2 & 3 \\
+	M-L & 572 & & 0 & \\
+	L-L & 11113 & & 200 & 547 \\ \hline
+	Total & 24593 & 100 & 387
+\end{tabular}
+
+\pause
+\vfill
+\begin{itemize}
+	\item A very small fraction of the similarity edges could be matched to background knowledge
+	\item Mappings between our molecules and databases are not one-to-one
+	\item Particularly lipids don't map well to KEGG IDs
+\end{itemize}
+\end{frame}
+
+%%% FRAMEBREAK %%%
+
+\begin{frame}{Annotated similarity network}
+\centering
+\only<1>{\includegraphics[width=7cm]{annotated-similarity-network}}
+\only<2>{\includegraphics[width=7cm]{annotated-parts-only}}
 \end{frame}
 
 %%% FRAMEBREAK %%%
 
 \begin{frame}{Building a nested effects model}
+\centering
+\includegraphics[width=0.5\textwidth]{fgnem-title}
+%\hfill
+%\includegraphics[width=0.2\textwidth]{plos-logo}
+
+
+\includegraphics[width=0.5\textwidth]{fgnem}
+\end{frame}
+
+%%% FRAMEBREAD %%%
+\begin{frame}{Nested effect model}
+\centering
+\includegraphics[width=9cm]{fgnem-graph}
 \end{frame}
 
 \end{document}

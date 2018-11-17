@@ -3,10 +3,10 @@ library("KnockoutNets")
 library("dplyr")
 
 # Load features
-spread_table <- readRDS("processed-data/spread-table-for-similarities.rds")
+feature_t_df <- readRDS("processed-data/feature_t_df.rds")
 
-expr = as.matrix( select( spread_table, -"Molecule ID", -"Molecule Name", -"Molecule Type", -"id" ) )
-rownames( expr ) = spread_table$`Molecule ID`
+expr = as.matrix( select( feature_t_df, -"Molecule ID" ) )
+rownames( expr ) = feature_t_df %>% pull( `Molecule ID` )
 
 # Limiter for experimentation
 # expr = expr[1:10,1:10]
@@ -23,12 +23,12 @@ params = paramGen( 1.5 , 1 ) # Defaults, maybe worth changing
 # Run FGNEM
 results <- scoreBestModelEstimate( eg
                                  , params = params
-                                 , doTransitivity = FALSE
+                                 , doTransitivity = TRUE
                                  , summarization = max # or logsum
            )
 
 # Save results
-saveRDS( results, file = "results/fgnem-v1.rds" )
+saveRDS( results, file = "results/fgnem-v2.rds" )
 
 ## Unused:
 

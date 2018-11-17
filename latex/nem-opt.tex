@@ -1,0 +1,78 @@
+\documentclass[twocolumn]{article}
+
+\usepackage{amsmath,amsfonts}
+
+\title{Nested Effects Models: seeking an optimal approach}
+
+\author{Yuriy Sverchkov}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+We see a nested effects model as a way to express a nesting structure of sets of effects that are affected subject to an action.
+
+\begin{table}
+	\centering
+	\begin{tabular}{l|ccc}
+		      & $a$ & $b$ & $c$ \\ \hline
+		$e_1$ &   1 &   0 &   0 \\
+		$e_2$ &  -1 &   0 &   0 \\
+		$e_3$ &   1 &   1 &   0 \\
+		$e_4$ &  -1 &   1 &   0 \\
+		$e_5$ &   0 &  -1 &   0 \\
+		$e_6$ &   0 &  -1 &  -1 \\
+		$e_7$ &   1 &   0 &  -1 \\
+		$e_8$ &  -1 &   0 &  -1 \\
+		$e_9$ &   1 &  -1 &  -1 \\
+	\end{tabular}
+	\caption{Toy example data}
+\end{table}
+
+Hence we define ``coverage'' of a set of actions as the number of effects affected by any action in the set, and not affected by subsets of actions outside the set.
+
+\[
+C( \{ a \} ) = 2
+\]
+
+\begin{table}
+	\centering
+	\begin{tabular}{l|rrr}
+		$S$ & $C(S)$ & $C(S^+)$ & $C( S^- )$ \\ \hline
+		$\emptyset$ & 0 & 9 & 0 \\
+		$\{a\}$ & 2 & 7 & 2 \\
+		$\{b\}$ & 1 & 5 & 1 \\
+		$\{c\}$ & 0 & 4 & 0 \\
+		$\{a,b\}$ & 2 & 3 & 5 \\
+		$\{a,c\}$ & 2 & 3 & 4 \\
+		$\{b,c\}$ & 1 & 2 & 2 \\
+		$\{a,b,c\}$ & 1 & 1 & 9 \\
+	\end{tabular}
+	\caption{Coverage counts for toy example}
+\end{table}
+
+Let us use the shorthand $C( a )$ to represent $C( \{a\} )$, and let us use the shorthand $C( a^+ )$ to represent the number of effects affected by any action in $a$, i.e.:
+
+\[
+C( a^+ ) = C( \{a\}, \{a,b\}, \{a,c\} \ldots ) = 7
+\]
+
+The ideal NEM is a DAG such that (let $A(n)$ be the ancestry of $n$ in the DAG)
+\[
+\max \sum_n C( A( n ) )
+\]
+
+\section{A greedy search}
+
+Constructing the DAG one node at a time is tough because being a DAG, we must consider many possible combinations of parents.
+
+\section{Another approach}
+Consider the case where we must arrange the actions in a single thread $a \rightarrow b \rightarrow \ldots$.
+The node at the top must necessarily be the one that maximizes $C(n^+)$, and each node subsequent should maximize $C(A(n)^+)$.
+
+\paragraph{Proof} To be added.
+
+We can next consider constructing for each node $n$ the best strand rooted at $n$.
+If a strand rooted at $n$ scores lower or equal to some $C(\{n,m\}^+)$ $n$ can be eliminated from consideration as a root node.
+
+\end{document}
