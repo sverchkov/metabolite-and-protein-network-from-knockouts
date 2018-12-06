@@ -44,6 +44,8 @@ protein_map <- bind_rows(
   ) %>%
   mutate( hsa_code = uniprot2kegg[uniprot] )
 
+hsa_map <- protein_map %>% distinct( molecule = `Molecule ID`, hsa_code ) %>% filter( !is.na( hsa_code ) )
+
 compound_map <- bind_rows(
   mapply(
     function( m_id, kegg ){
@@ -99,8 +101,8 @@ string_annotations <- found_string_pp %>%
 
 # Protein-protein edges based on KEGG are annotated by common pathways
 found_pp <- edges_pp %>%
-  inner_join( distinct( protein_map, a = `Molecule ID`, a_hsa = hsa_code ), by = "a" ) %>%
-  inner_join( distinct( protein_map, b = `Molecule ID`, b_hsa = hsa_code ), by = "b" )
+  inner_join( select( hsa_map, a = molecule, a_hsa = hsa_code ), by = "a" ) %>%
+  inner_join( select( hsa_map, b = molecule, b_hsa = hsa_code ), by = "b" )
 
 kegg_annotations_pp <- bind_rows(
   found_pp %>%
@@ -112,10 +114,13 @@ kegg_annotations_pp <- bind_rows(
     ungroup(),
   found_pp %>%
     filter( a_hsa == b_hsa ) %>%
+    select( a, b ) %>%
     mutate( kegg_annotation = "Same KEGG ID" )
 )
 annotations_pp <- full_join( kegg_annotations_pp, string_annotations, by = c( "a", "b" ) ) %>%
-  mutate( annotation = paste( na.omit( c( string_annotation, kegg_annotation ) ), collapse = "; " ) )
+  rowwise() %>%
+  mutate( annotation = paste( na.omit( c( string_annotation, kegg_annotation ) ), collapse = "; " ) ) %>%
+  ungroup()
 
 found_cc <- edges_cc %>%
   inner_join( distinct( compound_map, a = `Molecule ID`, a_cpd = compound ), by = "a" ) %>%
