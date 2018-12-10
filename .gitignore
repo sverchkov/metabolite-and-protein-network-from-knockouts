@@ -33,3 +33,9 @@ metabolite-and-protein-network-from-knockouts.Rproj
 raw-bgk
 # Specific files
 condor-bundles/dot-product/assume-r-dots.dag
+# LaTeX
+latex/*.nav
+latex/*.out
+latex/*.snm
+latex/*.toc
+
