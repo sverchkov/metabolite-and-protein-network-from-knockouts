@@ -50,19 +50,60 @@ if ( any( is.na( feature_df ) ) )
 
 ## Analysis
 
-### Correlational network analysis
+### Molecule similarity network analysis
 
-#### Obtain correlation matrix
+#### Obtain similarity matrix
 ```{r eval = F}
 source( "R/compute-cosine-smimilarity.R" ) # Takes a while, best to run in separate process. Condor version also exists.
 ```
 
-#### Filter correlations
+#### Filter similarities
 ```{r eval = F}
-source( "R/?" )
+source( "R/filter-similarities.R" )
+```
+
+### KO similarity network analysis
+```{r eval = F}
+source("R/compute-cosine-similarity-ko.R")
 ```
 
 ### Factor Graph Nested Effects Model
 
+```{r eval = F}
+source("R/run-fgnem.R")
+```
+
+#### Factor Graph Stability
+
+Bootstrap-like generation of many factor graphs
+
+```{r eval = F}
+source("R/run-fgnem-stability.R")
+source("R/eval-fgnem-stability.R")
+```
+
 ### Background network mapping
 
+Load BK
+
+```{r eval = F}
+# source("R/load-kegg.R") # Not needed as it turns out
+source("R/load-string-db.R")
+```
+
+Mapping rules:
+
+  * Protein-protein, STRING: check if protein pair is in DB
+  * Protein-protein, KEGG: check if protein pair shares a pathway
+  * Protein-compound, KEGG: check if protein catalyzed a reaction in which the compound participates
+  * Compound-compound, KEGG: check if the compounds share a reaction
+
+```{r eval = F}
+source("R/annotate-net-v2.R")
+```
+
+Deeper, multi-step mappings:
+
+```{r eval = F}
+# TODO
+```
