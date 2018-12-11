@@ -104,6 +104,35 @@ source("R/annotate-net-v2.R")
 
 Deeper, multi-step mappings:
 
+For two-step mappings:
+
+  * Using STRING, mapping a protein-protein interaction to protein-protein-protein interaction path
+  * Using KEGG, mapping a protein-protein interaction to a protein-pathway-protein-pathway-protein interaction path
+  * Using KEGG, mapping a protein-compound interaction to
+      * protein-pathway-protein-enzyme-reaction-compound path, or
+      * protein-enzyme-reaction-compound-reaction path
+  * Using KEGG, mapping a compound-compound interaction to
+      * compound-reaction-compound-reaction-compound path, or
+      * compound-reaction-(other?)-reaction-compound path
+
+The main issue is to determine what is and what isn't a proper mapping path
+
 ```{r eval = F}
 # TODO
+```
+
+### Background network augmentation
+
+Instead of just annotating edges, we can bring in new entities into the graph, e.g. reactions, pathways, enzymes from KEGG.
+
+```{r eval = F}
+# TODO
+```
+
+### Molecule and KO network fusion
+
+We map the KOs to their corresponding protein molecules and connect them, thereby fusing a KO network and a molecule network.
+
+```{r eval = F}
+source( "R/fuse-networks.R" )
 ```
