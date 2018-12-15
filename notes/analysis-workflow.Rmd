@@ -121,18 +121,18 @@ The main issue is to determine what is and what isn't a proper mapping path
 # TODO
 ```
 
-### Background network augmentation
-
-Instead of just annotating edges, we can bring in new entities into the graph, e.g. reactions, pathways, enzymes from KEGG.
-
-```{r eval = F}
-# TODO
-```
-
 ### Molecule and KO network fusion
 
 We map the KOs to their corresponding protein molecules and connect them, thereby fusing a KO network and a molecule network.
 
 ```{r eval = F}
 source( "R/fuse-networks.R" )
+```
+
+### Multi-entity background network
+
+We can consider bringing in new entities into the graph, e.g. reactions, pathways, enzymes from KEGG.
+
+```{r eval = F}
+source( "R/build-multi-entity-net.R")
 ```
