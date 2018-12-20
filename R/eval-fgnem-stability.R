@@ -3,6 +3,10 @@
 # Load things
 library("dplyr")
 # TODO: Load things
+nem_bootstrap_results <- readRDS( "results/nem_bootstrap_results.rds" )
+n <- 10000 # Number of molecules
+b <- 100 # Number of bootstrap samples
+
 
 # Function for converting {-1,0,1} matrix to 1-hot m x n x 3
 convertToOneHot <- function ( m ) {
@@ -29,3 +33,9 @@ edge_list <- tibble(
   proportion = as.vector( average_acc[,,c("1","-1")] ) )
 
 edge_list <- filter( edge_list, proportion != 0 )
+
+RCy3::createNetworkFromDataFrames(
+  nodes = NULL,
+  edges = edge_list %>% as.data.frame(),
+  title = paste("Bootstrap FGNEM",date()),
+  collection = "H3K Networks" )
