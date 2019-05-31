@@ -1,0 +1,25 @@
+---
+title: "Data Preprocessing"
+author: "Yuriy Sverchkov"
+date: "5/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Converting to R files
+
+The following goes from csvs to r data files:
+
+```{r}
+source('R/make-full-omics-data.R')
+source('R/make-master-molecule-id-table.R')
+```
+
+Creates the following in `processed-data`:
+
+ * `all-omics-table`
+ * `tested-omics-table`
+ * `molecule-ids`
